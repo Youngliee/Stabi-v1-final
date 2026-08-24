@@ -60,3 +60,11 @@ Deploy all files in this ZIP to the repository root.
 - Reduced mobile image smoothing load.
 - Shield radius reduced from ~58% to ~42% of character size.
 - Shield glow/burst intensity reduced for clearer gameplay.
+
+## v7 Freeze Fix
+- Skin frames are no longer embedded as multi-megabyte base64 strings inside JavaScript.
+- Every Default/Cyber/USDZ animation frame is now a separate WebP file under `/skins/`.
+- Only the animation state currently needed is decoded.
+- Sword auto-slash no longer forces a synchronous DOM layout/reflow.
+- Sword slash has a short cooldown and lighter particles.
+- Sword activation range reduced slightly to avoid repeated heavy effects.
