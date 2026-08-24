@@ -29,3 +29,9 @@ In-game prices:
 - USDZ Stabi: 150
 
 Deploy all files in this ZIP to the repository root.
+
+- v4 fix: restored ☰ MENU click/touch handler on mobile and desktop.
+
+- v5 USDZ fix: collectible, HUD and Shop now use the official USDZ logo supplied by the user.
+- Added `usdz-coin.png` rendered directly from the official SVG for reliable canvas/mobile display.
+- Removed the old yellow-circle collectible fallback.

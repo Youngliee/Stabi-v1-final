@@ -476,9 +476,15 @@ canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelate
 #toolsMenuBtn{right:10px!important;top:70px!important;z-index:150!important}#toolsMenu{right:10px!important;top:108px!important;z-index:149!important}#toolsMenu button{position:static!important;width:100%!important;margin:0!important}#pauseBtn{z-index:170!important}
 @media(max-width:650px){.gameGrid{grid-template-columns:1fr}.usdzHud .v{font-size:15px}.bankMini{font-size:7px}#toolsMenuBtn{top:64px!important;right:7px!important}#toolsMenu{top:100px!important;right:7px!important}}
 </style>
+
+<style>
+#toolsMenuBtn{pointer-events:auto!important;touch-action:manipulation!important}
+#toolsMenu{pointer-events:auto!important}
+#toolsMenu.open{display:flex!important}
+</style>
 </head>
 <body>
-<div id="gameShopModal"><div class="gameShopPanel"><h2 style="text-align:center;margin:0">🛒 STABI SHOP</h2><div class="gameBalance"><img src="usdz.svg"> <span id="shopBank">0</span> In-game USDZ Points</div><div style="text-align:center;font-size:9px;color:#9fc6c0">Gameplay points only — not real USDZ tokens.</div><div class="gameTabs"><button id="gameTabEq" class="active">⚔️ EQUIPMENT</button><button id="gameTabSkins">👕 SKINS</button></div><div id="gameShopContent"></div><button class="closeShop" id="closeGameShop">CLOSE</button></div></div>
+<div id="gameShopModal"><div class="gameShopPanel"><h2 style="text-align:center;margin:0">🛒 STABI SHOP</h2><div class="gameBalance"><img src="usdz-coin.png"> <span id="shopBank">0</span> In-game USDZ Points</div><div style="text-align:center;font-size:9px;color:#9fc6c0">Gameplay points only — not real USDZ tokens.</div><div class="gameTabs"><button id="gameTabEq" class="active">⚔️ EQUIPMENT</button><button id="gameTabSkins">👕 SKINS</button></div><div id="gameShopContent"></div><button class="closeShop" id="closeGameShop">CLOSE</button></div></div>
 <div id="gameItemsModal"><div class="gameShopPanel"><h2 style="text-align:center;margin:0">🎒 MY ITEMS</h2><div style="text-align:center" id="gameItemsSummary"></div><div class="gameGrid" id="gameItemsGrid"></div><button class="closeShop" id="closeGameItems">CLOSE</button></div></div>
 <div id="finishCinematic"><div id="finishTitle">STABILITY RESTORED</div><div id="finishSub">PHASE COMPLETE</div></div>
 
@@ -515,7 +521,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelate
 <div id="app">
 <div class="topbar">
 <div class="box logo"><div class="big">STABI RUNNER</div><div class="small">ROAD TO PHASE 2</div></div>
-<div class="box usdzHud"><div class="k">RUN USDZ</div><div class="v"><img src="usdz.svg" class="usdzMini" alt="USDZ"> <span id="coins">0</span></div><div class="bankMini">BANK <span id="bankBalance">0</span></div></div>
+<div class="box usdzHud"><div class="k">RUN USDZ</div><div class="v"><img src="usdz-coin.png" class="usdzMini" alt="USDZ"> <span id="coins">0</span></div><div class="bankMini">BANK <span id="bankBalance">0</span></div></div>
 <div class="box"><div class="k">SCORE</div><div class="v" id="score">0</div></div>
 <div class="box distance"><div class="k">DISTANCE</div><div class="v"><span id="distance">0</span>m</div></div>
 <div class="box"><div class="k">LIVES</div><div class="v" id="lives">♥♥♥</div></div>
@@ -656,7 +662,7 @@ function resize(){
 }
 addEventListener('resize',resize); resize();
 
-const usdzLogoImg=new Image(); usdzLogoImg.src='usdz.svg';
+const usdzLogoImg=new Image(); usdzLogoImg.src='usdz-coin.png';
 const USDZ_BANK_KEY='stabi_usdz_points_v1';
 function getUSDZBank(){return Number(localStorage.getItem(USDZ_BANK_KEY)||0)}
 function setUSDZBank(n){localStorage.setItem(USDZ_BANK_KEY,String(Math.max(0,Math.floor(n))));const b=document.getElementById('bankBalance');if(b)b.textContent=getUSDZBank()}
@@ -1010,8 +1016,13 @@ function drawPlayer(){
 }
 function drawEntity(e){
  if(e.type==='coin'){
-   if(usdzLogoImg.complete && usdzLogoImg.naturalWidth){ctx.drawImage(usdzLogoImg,e.x,e.y,e.w,e.h)}
-   else{ctx.fillStyle='#f7c945';ctx.beginPath();ctx.arc(e.x+17,e.y+17,17,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ffe98c';ctx.lineWidth=3;ctx.stroke()}
+   if(usdzLogoImg.complete && usdzLogoImg.naturalWidth){
+     ctx.save();
+     ctx.shadowColor='#8ff0e3';
+     ctx.shadowBlur=10;
+     ctx.drawImage(usdzLogoImg,e.x,e.y,e.w,e.h);
+     ctx.restore();
+   }
  } else if(e.type==='slippage'){
    ctx.fillStyle='#301628';ctx.fillRect(e.x,e.y,e.w,e.h);ctx.strokeStyle='#b2556b';ctx.lineWidth=3;ctx.strokeRect(e.x,e.y,e.w,e.h);
    drawPixelText('SLIP',e.x+e.w/2,e.y+24,10,'#ff7f87','center');drawPixelText('PAGE',e.x+e.w/2,e.y+39,10,'#ff7f87','center')
@@ -1401,7 +1412,7 @@ setInterval(()=>{
  const SKINS=[
   {id:'default',name:'Default Stabi',icon:'🟢',price:0},
   {id:'cyber',name:'Cyber Stabi',icon:'⚡',price:100},
-  {id:'usdz',name:'USDZ Stabi',icon:'<img src="usdz.svg" class="usdzShopLogo">',price:150}
+  {id:'usdz',name:'USDZ Stabi',icon:'<img src="usdz-coin.png" class="usdzShopLogo">',price:150}
  ];
  const $=id=>document.getElementById(id);
  const stock=id=>Number(localStorage.getItem('stabi_stock_'+id)||0);
@@ -1421,12 +1432,12 @@ setInterval(()=>{
  }
  function renderEq(){
   $('gameShopContent').innerHTML='<div class="gameGrid">'+Object.entries(EQ).map(([id,x])=>{
-   if(x.consumable){const q=qty[id]||1,total=x.price*q;return `<div class="gameCard"><div class="gameIcon">${x.icon}</div><div class="gameName">${x.name}</div><div class="gameDesc">${x.desc}</div><div class="gameOwned">STOCK ×${stock(id)}</div><div class="qtyRow">${[1,5,10].map(n=>`<button data-q="${n}" data-id="${id}" class="${q===n?'sel':''}">×${n}</button>`).join('')}</div><div class="gamePrice"><img src="usdz.svg" style="width:16px;vertical-align:-3px"> ${total} USDZ Points</div><button class="gameBuy" data-buy-eq="${id}">BUY ×${q}</button></div>`}
-   return `<div class="gameCard"><div class="gameIcon">${x.icon}</div><div class="gameName">${x.name}</div><div class="gameDesc">${x.desc}</div><div class="gameOwned">${perm(id)?'OWNED ×1 • ACTIVE':'NOT OWNED'}</div><div class="gamePrice"><img src="usdz.svg" style="width:16px;vertical-align:-3px"> ${x.price} USDZ Points</div><button class="gameBuy" data-buy-eq="${id}" ${perm(id)?'disabled':''}>${perm(id)?'OWNED ✓':'BUY'}</button></div>`
+   if(x.consumable){const q=qty[id]||1,total=x.price*q;return `<div class="gameCard"><div class="gameIcon">${x.icon}</div><div class="gameName">${x.name}</div><div class="gameDesc">${x.desc}</div><div class="gameOwned">STOCK ×${stock(id)}</div><div class="qtyRow">${[1,5,10].map(n=>`<button data-q="${n}" data-id="${id}" class="${q===n?'sel':''}">×${n}</button>`).join('')}</div><div class="gamePrice"><img src="usdz-coin.png" style="width:16px;vertical-align:-3px"> ${total} USDZ Points</div><button class="gameBuy" data-buy-eq="${id}">BUY ×${q}</button></div>`}
+   return `<div class="gameCard"><div class="gameIcon">${x.icon}</div><div class="gameName">${x.name}</div><div class="gameDesc">${x.desc}</div><div class="gameOwned">${perm(id)?'OWNED ×1 • ACTIVE':'NOT OWNED'}</div><div class="gamePrice"><img src="usdz-coin.png" style="width:16px;vertical-align:-3px"> ${x.price} USDZ Points</div><button class="gameBuy" data-buy-eq="${id}" ${perm(id)?'disabled':''}>${perm(id)?'OWNED ✓':'BUY'}</button></div>`
   }).join('')+'</div>';
  }
  function renderSkins(){
-  $('gameShopContent').innerHTML='<div class="gameGrid">'+SKINS.map(x=>`<div class="gameCard"><div class="gameIcon">${x.icon}</div><div class="gameName">${x.name}</div><div class="gameDesc">Permanent skin with its own Run / Jump / Slide / Hurt / Death / Victory animation.</div><div class="gameOwned">${skinOwned(x.id)?'OWNED ×1':'NOT OWNED'}</div><div class="gamePrice">${x.price?`<img src="usdz.svg" style="width:16px;vertical-align:-3px"> ${x.price} USDZ Points`:'FREE'}</div><button class="gameBuy" data-buy-skin="${x.id}" ${skinOwned(x.id)?'disabled':''}>${skinOwned(x.id)?'OWNED ✓':'BUY'}</button></div>`).join('')+'</div>';
+  $('gameShopContent').innerHTML='<div class="gameGrid">'+SKINS.map(x=>`<div class="gameCard"><div class="gameIcon">${x.icon}</div><div class="gameName">${x.name}</div><div class="gameDesc">Permanent skin with its own Run / Jump / Slide / Hurt / Death / Victory animation.</div><div class="gameOwned">${skinOwned(x.id)?'OWNED ×1':'NOT OWNED'}</div><div class="gamePrice">${x.price?`<img src="usdz-coin.png" style="width:16px;vertical-align:-3px"> ${x.price} USDZ Points`:'FREE'}</div><button class="gameBuy" data-buy-skin="${x.id}" ${skinOwned(x.id)?'disabled':''}>${skinOwned(x.id)?'OWNED ✓':'BUY'}</button></div>`).join('')+'</div>';
  }
  function render(){updateBalance();tab==='equipment'?renderEq():renderSkins()}
  function openShop(){$('gameShopModal').style.display='flex';render()}
@@ -1453,6 +1464,37 @@ setInterval(()=>{
  window.StabiStock={stock,consume(id){const n=stock(id);if(n<=0)return false;setStock(id,n-1);return true},hasPermanent:perm};
  setTimeout(()=>{ensureMenu();updateBalance()},250);
  window.addEventListener('load',()=>setTimeout(()=>{ensureMenu();updateBalance()},150));
+})();
+</script>
+
+<script>
+(function(){
+  function fixToolsMenu(){
+    const btn=document.getElementById('toolsMenuBtn');
+    const menu=document.getElementById('toolsMenu');
+    if(!btn||!menu||btn.dataset.menuFixed==='1') return;
+    btn.dataset.menuFixed='1';
+
+    btn.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      menu.classList.toggle('open');
+    });
+
+    btn.addEventListener('touchend',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      menu.classList.toggle('open');
+    },{passive:false});
+
+    menu.addEventListener('click',e=>e.stopPropagation());
+    document.addEventListener('click',function(e){
+      if(!menu.contains(e.target) && e.target!==btn) menu.classList.remove('open');
+    });
+  }
+  document.addEventListener('DOMContentLoaded',fixToolsMenu);
+  window.addEventListener('load',fixToolsMenu);
+  setTimeout(fixToolsMenu,300);
 })();
 </script>
 </body>
