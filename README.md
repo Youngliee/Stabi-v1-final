@@ -52,3 +52,11 @@ Deploy all files in this ZIP to the repository root.
 
 - Desktop gate fix: Android Chrome can keep a narrow CSS viewport even after Desktop Site is enabled.
 - The player now enables Desktop Site, taps confirmation once, and the session unlocks normally.
+
+## Skin Performance + Shield Fix
+- Cyber/USDZ skin frames now lazy-load by animation state.
+- Only RUN preloads when a skin is equipped.
+- Jump/Slide/Hurt/Death/Victory load only when needed.
+- Reduced mobile image smoothing load.
+- Shield radius reduced from ~58% to ~42% of character size.
+- Shield glow/burst intensity reduced for clearer gameplay.

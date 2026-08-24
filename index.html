@@ -653,21 +653,26 @@ const STABI_SKINS = {"default":{"run":["data:image/webp;base64,UklGRkI3AABXRUJQV
 let equippedSkin=localStorage.getItem("stabi_equipped_skin")||"default";
 let STABI_SPRITES=STABI_SKINS[equippedSkin]||STABI_SKINS.default;
 const spriteImages = {};
-for (const [state, arr] of Object.entries(STABI_SPRITES)) {
-  spriteImages[state] = arr.map(src => { const im=new Image(); im.src=src; return im; });
+function ensureSpriteStateLoaded(state){
+  if(spriteImages[state] && spriteImages[state].length) return;
+  const arr=STABI_SPRITES[state]||[];
+  spriteImages[state]=arr.map(src=>{const im=new Image();im.decoding='async';im.loading='eager';im.src=src;return im;});
+}
+function clearSpriteCache(){
+  for(const k of Object.keys(spriteImages)) delete spriteImages[k];
 }
 function loadEquippedSkin(name){
  equippedSkin=name;
  STABI_SPRITES=STABI_SKINS[name]||STABI_SKINS.default;
- for(const k of Object.keys(spriteImages)) delete spriteImages[k];
- for(const [state,arr] of Object.entries(STABI_SPRITES)){
-   spriteImages[state]=arr.map(src=>{const im=new Image();im.src=src;return im;});
- }
+ clearSpriteCache();
+ // Only preload RUN immediately. Other states load on demand.
+ ensureSpriteStateLoaded('run');
  localStorage.setItem("stabi_equipped_skin",name);
  setSpriteState('run',true);
 }
-let spriteState='run', spriteIndex=0, spriteClock=0, endAnimClock=0, endAnimState=null;
+let spriteState='run', spriteIndex=0, spriteClock=0, endAnimClock=0, endAnimState=null; ensureSpriteStateLoaded('run');
 function setSpriteState(state, reset=true){
+  ensureSpriteStateLoaded(state);
   if(spriteState!==state || reset){ spriteState=state; if(reset){spriteIndex=0;spriteClock=0;} }
 }
 function updateSpriteAnimation(dt){
@@ -690,7 +695,10 @@ function updateSpriteAnimation(dt){
     }
   }
 }
-function currentSprite(){ return spriteImages[spriteState]?.[spriteIndex] || charImg; }
+function currentSprite(){
+  ensureSpriteStateLoaded(spriteState);
+  return spriteImages[spriteState]?.[spriteIndex] || spriteImages.run?.[0] || charImg;
+}
 
 
 let W=0,H=0,DPR=1;
@@ -805,12 +813,12 @@ function hit(e){
  if(P.dash>0){score+=40;burst(e.x,e.y,'#ffd75f',16);toast('DASH BREAK! +40');remove(e);return}
  if(P.shield>0){
    P.shield=0;
-   burst(e.x,e.y,'#8ff0e2',18);toast('🛡️ PICKUP SHIELD USED!');
+   burst(e.x,e.y,'#8ff0e2',10);toast('🛡️ PICKUP SHIELD USED!');
    try{window.StabiAudio?.SFX?.shield?.()}catch(_){} remove(e);return;
  }
  if((window.StabiStock?.stock?.('shield')||0)>0){
    window.StabiStock.consume('shield');
-   burst(e.x,e.y,'#8ff0e2',18);toast('🛡️ ZERO-SLIPPAGE SHIELD ×1');
+   burst(e.x,e.y,'#8ff0e2',10);toast('🛡️ ZERO-SLIPPAGE SHIELD ×1');
    try{window.StabiAudio?.SFX?.shield?.()}catch(_){} remove(e);return;
  }
  if(P.inv>0)return;
@@ -1048,11 +1056,19 @@ function drawPlayer(){
    }
  }
  if(P.shield>0){
-   ctx.save();ctx.strokeStyle='#9dfff0';ctx.lineWidth=4;ctx.shadowColor='#9dfff0';ctx.shadowBlur=18;
-   ctx.beginPath();ctx.arc(cx,cy,Math.max(baseW,baseH)*.58,0,Math.PI*2);ctx.stroke();ctx.restore();
+   ctx.save();
+   ctx.strokeStyle='#9dfff0';
+   ctx.lineWidth=3;
+   ctx.shadowColor='#9dfff0';
+   ctx.shadowBlur=10;
+   ctx.globalAlpha=.82;
+   ctx.beginPath();
+   ctx.arc(cx,cy,Math.max(baseW,baseH)*.42,0,Math.PI*2);
+   ctx.stroke();
+   ctx.restore();
  }
  if(P.inv>0&&Math.floor(P.inv*12)%2===0)ctx.globalAlpha=.35;
- ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+ ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality=(W<=650?'medium':'high');
  ctx.drawImage(sprite,drawX,P.y,baseW,baseH);
  ctx.restore();
 }
