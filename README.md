@@ -68,3 +68,11 @@ Deploy all files in this ZIP to the repository root.
 - Sword auto-slash no longer forces a synchronous DOM layout/reflow.
 - Sword slash has a short cooldown and lighter particles.
 - Sword activation range reduced slightly to avoid repeated heavy effects.
+
+## v8 Asset Fallback Fix
+- Removed the `/skins/` folder dependency.
+- All skin WebP assets are now placed directly in the repository root.
+- If a Cyber/USDZ frame fails to load, the game falls back to Default Stabi instead of showing nothing.
+- Broken/not-yet-loaded frames are never drawn.
+- Added a skin asset watchdog and startup fallback.
+- IMPORTANT: upload every file from this ZIP, not only index.html.
