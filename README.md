@@ -76,3 +76,16 @@ Deploy all files in this ZIP to the repository root.
 - Broken/not-yet-loaded frames are never drawn.
 - Added a skin asset watchdog and startup fallback.
 - IMPORTANT: upload every file from this ZIP, not only index.html.
+
+## v9 Share to X Fix
+- Score is now always converted to a real number.
+- USDZ collected reads the numeric value, not the HTML span object.
+- Prevents `NaN` and `[object HTMLSpanElement]` in X posts.
+
+## v10 Sword Freeze Fix
+- Rebuilt Stability Sword auto-slash as a canvas/game-loop-only mechanic.
+- Removed DOM slash animation and `Element.animate()` from combat.
+- Sword stock is decremented directly and safely.
+- Destroyed MEV/Slippage is removed only after the lightweight slash check.
+- Added a short 0.32s cooldown to avoid repeated processing.
+- Sword stock HUD updates inside the normal game update loop.

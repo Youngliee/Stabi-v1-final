@@ -337,23 +337,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelate
 @media(max-width:600px){.eqGrid{grid-template-columns:1fr}}
 </style>
 <style>
-#attackBtn{
- position:absolute;right:18px;bottom:92px;z-index:65;width:72px;height:72px;
- border-radius:50%;border:2px solid #b9fff4;background:#123d39dd;color:white;
- font:1000 11px system-ui;box-shadow:0 0 18px #62e6d288;display:none;
- touch-action:manipulation
-}
-#attackBtn.cooldown{opacity:.45}
-.slashFx{
- position:absolute;z-index:62;width:120px;height:100px;pointer-events:none;
- border-right:9px solid #dffff8;border-radius:50%;
- filter:drop-shadow(0 0 8px #78ffe8) drop-shadow(0 0 18px #50cfff);
- transform:rotate(-35deg) scale(.2);opacity:0
-}
-.slashFx.go{animation:stabiSlash .28s ease-out forwards}
-@keyframes stabiSlash{
- 0%{transform:rotate(-70deg) scale(.25);opacity:0}
- 25%{opacity:1}
+25%{opacity:1}
  70%{transform:rotate(20deg) scale(1.2);opacity:1}
  100%{transform:rotate(45deg) scale(1.35);opacity:0}
 }
@@ -842,6 +826,34 @@ function hit(e){
  if(lives<=0) end(false);
 }
 function remove(e){const i=entities.indexOf(e);if(i>=0)entities.splice(i,1)}
+let swordSlashCooldown=0;
+function swordStock(){return Number(localStorage.getItem('stabi_stock_sword')||0)}
+function consumeSword(){
+ const n=swordStock();
+ if(n<=0)return false;
+ localStorage.setItem('stabi_stock_sword',String(n-1));
+ return true;
+}
+function trySwordSlash(e){
+ if(!e || !['slippage','mev'].includes(e.type))return false;
+ if(swordSlashCooldown>0 || swordStock()<=0)return false;
+
+ const playerFront=P.x+P.w;
+ const distance=e.x-playerFront;
+ const verticalClose=(e.y+e.h>P.y+8) && (e.y<P.y+(P.duck?P.h*.62:P.h)+10);
+ if(distance<0 || distance>105 || !verticalClose)return false;
+
+ if(!consumeSword())return false;
+ swordSlashCooldown=.32;
+
+ // Canvas-only effect: no DOM animation or layout work.
+ burst(e.x+e.w/2,e.y+e.h/2,'#a9fff0',6);
+ score+=50;
+ toast('⚔️ AUTO SLASH!  SWORD ×'+swordStock());
+ try{beep(820,.06)}catch(_){}
+ e.__destroyed=true;
+ return true;
+}
 function collect(e){
  if(e.type==='coin'){coins++;addUSDZBank(1);score+=25;phase=Math.min(100,phase+2.5);beep(880);burst(e.x,e.y,'#ffd75f',8)}
  if(e.type==='shield'){P.shield=1;score+=15;toast('SHIELD ACQUIRED');beep(760,.08)}
@@ -850,7 +862,7 @@ function collect(e){
  remove(e)
 }
 function startGame(){
- entities=[];particles=[];running=true;paused=false;last=0;world=0;score=0;coins=0;lives=3+(window.StabiStock?.hasPermanent?.('core')?1:0);phase=0;speed=280;victoryTriggered=false; finishApproach=false; finishApproachT=0; window.__stabiSwordUsed=false; window.StabiSwordSlash?.resetRun?.(); window.StabiPortalFinish?.reset?.();spawnClock=.5;powerClock=0;waveClock=0;bossMode=false;
+ entities=[];particles=[];running=true;paused=false;last=0;world=0;score=0;coins=0;lives=3+(window.StabiStock?.hasPermanent?.('core')?1:0);phase=0;speed=280;victoryTriggered=false; finishApproach=false; finishApproachT=0; window.__stabiSwordUsed=false; swordSlashCooldown=0; window.StabiPortalFinish?.reset?.();spawnClock=.5;powerClock=0;waveClock=0;bossMode=false;
  applyPlayerSize(); Object.assign(P,{y:floorY()-P.h,vy:0,onGround:true,jumps:0,duck:false,shield:0,dash:0,inv:0,anim:0}); setSpriteState('run',true); endAnimState=null;
  document.getElementById('startScreen').style.display='none';
   victoryTriggered=false;
@@ -990,15 +1002,10 @@ function update(dt){
    e.x-=speed*dt*(e.type==='mev'?1.13:1);
    if(e.x<-140){remove(e);continue}
 
-   // Stability Sword: automatic defensive slash before the hazard touches Stabi.
-   if(['slippage','mev'].includes(e.type) &&
-      (window.StabiStock?.stock?.('sword')||0)>0){
-     const playerFront=P.x+P.w;
-     const distance=e.x-playerFront;
-     const verticalClose=(e.y+e.h>P.y+8) && (e.y<P.y+ph+10);
-     if(distance>=0 && distance<=105 && verticalClose){
-       if(window.StabiSwordSlash?.autoSlash?.(e)) continue;
-     }
+   // Stability Sword: lightweight automatic defensive slash.
+   if(trySwordSlash(e)){
+     remove(e);
+     continue;
    }
 
    const pr={x:P.x,y:P.y,w:P.w,h:ph};
@@ -1007,6 +1014,7 @@ function update(dt){
      else hit(e)
    }
  }
+ swordSlashCooldown=Math.max(0,swordSlashCooldown-dt);
  for(const p of particles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=280*dt;p.life-=dt}
  particles=particles.filter(p=>p.life>0);
  if(shake>0)shake*=.84;if(flash>0)flash-=dt;
@@ -1017,6 +1025,12 @@ function update(dt){
  const bestHud=document.getElementById('bestHud'); if(bestHud)bestHud.textContent=bestNow;
  const sh=document.getElementById('shieldHud'); if(sh)sh.textContent=P.shield>0?'ACTIVE':'READY TO COLLECT';
  const dh=document.getElementById('dashHud'); if(dh)dh.textContent=P.dash>0?'BOOSTING':'READY';
+ const eqHud=document.getElementById('equippedHud');
+ if(eqHud){
+   const ss=swordStock();
+   if(ss>0){eqHud.textContent='⚔️ STABILITY SWORD ×'+ss;eqHud.style.display='block'}
+   else{eqHud.style.display='none'}
+ }
  const evtag=document.getElementById('eventTag'); if(evtag)evtag.style.display=bossMode?'block':'none';
 }
 function drawPixelText(text,x,y,size=12,color='#fff',align='left'){
@@ -1342,16 +1356,42 @@ function showStabiTutorial(){
 <script>
 function shareStabiToX(){
  const url=location.origin+location.pathname;
- const scoreText=(typeof score!=="undefined")?Math.floor(score):0;
- const coinText=(typeof coins!=="undefined")?coins:0;
+
+ // Read clean numeric values from game state first, HUD as fallback.
+ let scoreValue=0;
+ let coinValue=0;
+
+ try{
+   if(typeof score==="number" && Number.isFinite(score)){
+     scoreValue=Math.floor(score);
+   }else{
+     const el=document.getElementById("score");
+     scoreValue=Number.parseInt(el?.textContent||"0",10)||0;
+   }
+ }catch(e){
+   scoreValue=Number.parseInt(document.getElementById("score")?.textContent||"0",10)||0;
+ }
+
+ try{
+   if(typeof coins==="number" && Number.isFinite(coins)){
+     coinValue=Math.floor(coins);
+   }else{
+     const el=document.getElementById("coins");
+     coinValue=Number.parseInt(el?.textContent||"0",10)||0;
+   }
+ }catch(e){
+   coinValue=Number.parseInt(document.getElementById("coins")?.textContent||"0",10)||0;
+ }
+
  const text=`I reached the Phase 2 portal in Stabi Runner! 🏃‍♀️⚡
 
-Score: ${scoreText} SP
-USDZ collected: ${coinText}
+Score: ${scoreValue} SP
+USDZ collected: ${coinValue}
 
 Can you beat my run? 👀
 
 #Stabilizer #StabiRunner`;
+
  const share=`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
  window.open(share,"_blank","noopener,noreferrer");
 }
@@ -1362,72 +1402,8 @@ document.addEventListener("click",e=>{
  }
 });
 </script>
-<script>
-(function(){
- let usedThisRun=false;
- let slashCooldownUntil=0;
- const fx=document.getElementById("slashFx");
 
- function swordEquipped(){
-   return (window.StabiStock?.stock?.('sword')||0)>0;
- }
 
- function showSlash(target){
-   if(!fx)return;
-   // slash is positioned inside the game, directly in front of the runner
-   fx.style.left=(P.x + P.w + 4)+"px";
-   fx.style.top=(P.y + 18)+"px";
-   // Avoid synchronous layout reflow on mobile.
-   try{
-     fx.getAnimations().forEach(a=>a.cancel());
-     fx.animate(
-       [{opacity:0,transform:'scale(.65) rotate(-18deg)'},{opacity:1,transform:'scale(1) rotate(0deg)'},{opacity:0,transform:'scale(1.12) rotate(10deg)'}],
-       {duration:240,easing:'ease-out'}
-     );
-   }catch(_){}
-   burst(target.x + target.w/2, target.y + target.h/2, '#a9fff0', 8);
-   try{window.StabiAudio?.tone?.(820,.10,"sawtooth",.17,0,150)}catch(_){}
- }
-
- function autoSlash(target){
-   if(!swordEquipped() || !running || paused) return false;
-   if(!target || !['slippage','mev'].includes(target.type)) return false;
-   const now=performance.now();
-   if(now<slashCooldownUntil) return false;
-   slashCooldownUntil=now+280;
-
-   if(!window.StabiStock?.consume?.('sword')) return false;
-   usedThisRun=false;
-   window.__stabiSwordUsed=false;
-   showSlash(target);
-   score += 50;
-   toast('⚔️ AUTO SLASH! +50');
-   remove(target);
-   return true;
- }
-
- function resetRun(){
-   usedThisRun=false;
-   slashCooldownUntil=0;
-   window.__stabiSwordUsed=false;
- }
-
- window.StabiSwordSlash={
-   autoSlash,
-   resetRun,
-   isUsed:()=>usedThisRun
- };
-})();
-</script>
-<script>
-setInterval(()=>{
- const h=document.getElementById("equippedHud");
- if(!h || !window.StabiEquipment?.swordReady?.())return;
- const n=window.StabiStock?.stock?.('sword')||0;
- h.textContent="⚔️ STABILITY SWORD ×"+n;
- h.style.display="block";
-},300);
-</script>
 <script>
 (function(){
  let active=false;
