@@ -49,3 +49,6 @@ Deploy all files in this ZIP to the repository root.
 - Players on phones are instructed to enable **Desktop Site**.
 - Recommended orientation: landscape.
 - Game unlocks automatically once desktop-sized viewport is detected.
+
+- Desktop gate fix: Android Chrome can keep a narrow CSS viewport even after Desktop Site is enabled.
+- The player now enables Desktop Site, taps confirmation once, and the session unlocks normally.
