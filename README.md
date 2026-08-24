@@ -35,3 +35,17 @@ Deploy all files in this ZIP to the repository root.
 - v5 USDZ fix: collectible, HUD and Shop now use the official USDZ logo supplied by the user.
 - Added `usdz-coin.png` rendered directly from the official SVG for reliable canvas/mobile display.
 - Removed the old yellow-circle collectible fallback.
+
+- v6 Shop Fix:
+  - Equipment renders immediately when Shop opens.
+  - Skins tab renders reliably.
+  - Shop initializes only after DOM is ready.
+  - Shop/My Items buttons remain inside compact Menu.
+  - Mobile click/touch behavior improved.
+
+
+## Desktop Mode Required
+- Mobile layout is blocked below 900px CSS viewport width.
+- Players on phones are instructed to enable **Desktop Site**.
+- Recommended orientation: landscape.
+- Game unlocks automatically once desktop-sized viewport is detected.
