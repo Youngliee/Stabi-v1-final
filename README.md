@@ -1,1 +1,31 @@
-# Final-stabi-runner
+# Stabi Runner — Final Candidate v2
+
+Included:
+- Wallet / Sepolia removed from the game and Shop.
+- Official USDZ SVG used in HUD, collectibles and Shop.
+- Collected USDZ is saved as **In-game USDZ Points** (not real USDZ tokens).
+- Shop uses only in-game USDZ Points.
+- Sword: consumable stock; every auto-slash consumes ×1.
+- Shield: consumable stock; every automatic protection consumes ×1.
+- Speed Boots: permanent upgrade; Dash duration increases automatically.
+- Recovery Core: permanent upgrade; supports a true 4-life maximum throughout the run.
+- My Items shows only owned content.
+- Default Stabi, Cyber Stabi, and USDZ Stabi.
+- USDZ Stabi uses the user's actual frames: Run 6 / Jump 3 / Slide 2 / Hurt 2 / Death 4 / Victory 2.
+- Cyber animation remains included.
+- Character is smaller on mobile.
+- Mobile touch handling prevents browser double-tap interference.
+- Early obstacle speed and spawn rate are more forgiving.
+- Compact Menu keeps Pause unobstructed.
+- Cinematic Phase 2 portal finish remains.
+- Unified audio and X share/card remain.
+
+In-game prices:
+- Stability Sword: 5 USDZ Points each
+- Zero-Slippage Shield: 8 each
+- Speed Boots: 40
+- Recovery Core: 60
+- Cyber Stabi: 100
+- USDZ Stabi: 150
+
+Deploy all files in this ZIP to the repository root.
