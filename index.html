@@ -780,12 +780,12 @@ function spawn(type,extra={}){
  const fy=floorY();
  if(type==='coin'){e.w=e.h=34;e.y=fy-50-(Math.random()<.35?70:0)}
  if(type==='slippage'){e.w=58;e.h=58;e.y=fy-e.h}
- if(type==='mev'){e.w=64;e.h=48;e.y=fy-e.h-18}
+ if(type==='mev'){e.w=64;e.h=48;e.y=fy-e.h}
  if(type==='spike'){e.w=54;e.h=34;e.y=fy-e.h}
  if(type==='shield'){e.w=e.h=40;e.y=fy-78}
  if(type==='dash'){e.w=e.h=40;e.y=fy-110}
  if(type==='heart'){e.w=e.h=36;e.y=fy-85}
- if(type==='boss'){e.w=110;e.h=110;e.y=fy-e.h}
+ if(type==='boss'){e.w=110;e.h=110;e.y=fy-e.h+8}
  entities.push(e)
 }
 function spawnPattern(){
