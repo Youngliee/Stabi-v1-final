@@ -89,3 +89,81 @@ Deploy all files in this ZIP to the repository root.
 - Destroyed MEV/Slippage is removed only after the lightweight slash check.
 - Added a short 0.32s cooldown to avoid repeated processing.
 - Sword stock HUD updates inside the normal game update loop.
+
+## v11 Skin Visual Normalization
+- Default Stabi is the 1.00 visual-size reference.
+- Cyber states are normalized around 1.10–1.13.
+- USDZ states are normalized around 1.11–1.14.
+- Character visuals are centered horizontally and anchored by the feet.
+- Collision/hitbox size is unchanged.
+- Built on v10, so the Sword freeze fix and all previous Shop/USDZ fixes remain included.
+
+## v12 Unique Sword Slash + HUD
+- Sword stock is visible in gameplay as STABILITY SWORD ×N.
+- Sword is auto-active; no Equip button is needed.
+- Default Stabi: teal/white crescent slash + sparkles.
+- Cyber Stabi: purple crescent + digital square particles.
+- USDZ Stabi: golden crescent + USDZ-style `$` spark accents.
+- One successful slash consumes exactly one Sword.
+- Slash effect is canvas-only (~0.22 sec), avoiding the old DOM-animation freeze.
+- Includes v11 Skin Normalization and v10 Sword Freeze Fix.
+
+## v13 All Fixes Test Build
+This build intentionally combines the requested systems so they can be bug-tested together.
+
+- Live skin switching: no page refresh required.
+- Skin is cosmetic only; core hitbox/combat/inventory are shared.
+- Unified Sword/Shield inventory source independent of selected skin.
+- Sword remains auto-active with stock visible in gameplay.
+- Default/Cyber/USDZ visual scale tightened and Run cadence normalized.
+- Enemy visuals redesigned while preserving original gameplay types:
+  - red evil character = SLIPPAGE
+  - purple evil character = MEV
+  - large robot = MEV BOTS
+  - triangular enemy = PRICE IMPACT
+- Enemy labels remain visible.
+- Added a small TEST BUILD HUD showing active skin and Sword/Shield stock.
+- Includes unique per-skin slash effects from v12.
+
+## v14 Shop Items Fix Test
+- Sword logic left unchanged.
+- Shield stock/HUD + visible canvas shield + block-consume path.
+- Shoes stock/HUD + jump boost while owned.
+- Extra Life stock/HUD + rescue path at zero lives.
+- Includes v13 changes.
+
+## v15 — 5000 SP / Consumables / Monsters
+- Phase 2 finish target is now 5000 SP.
+- Progress bar is calculated from SP: 2500 SP = 50%, 5000 SP = 100%.
+- Difficulty increases across 5 SP tiers.
+- Stability Sword remains on the working auto-slash logic.
+- Shield is consumable: BUY ×1/×5/×10, each blocked hit consumes ×1.
+- Speed Boots is consumable: BUY ×1/×5/×10, each manual Stability Dash consumes ×1.
+- Recovery Core is consumable: BUY ×1/×5/×10, automatically revives Stabi when the final life is lost and consumes ×1.
+- Gameplay HUD always shows stock for Sword / Shield / Boots / Core.
+- Slippage, MEV, Price Impact and MEV Bots now use monster/evil-character canvas visuals while retaining their labels and original gameplay hitboxes.
+
+## v15.1 Jump Fix
+- Restored normal Jump and Double Jump.
+- Removed stale dependency on the old `stabiJumpBoost()` helper.
+- Speed Boots remain tied to Stability Dash only.
+- Sword, slash effects, monsters, 5000 SP target, Shield and Recovery Core logic were not intentionally changed.
+
+## v15.2 Monster Update
+- Keeps the v15.1 jump/double-jump fix.
+- Replaces simple enemy shapes with richer animated canvas characters:
+  Slippage slime, MEV rogue, Price Impact spiked beast, and MEV Bot robot.
+- Enemy names remain above their heads.
+- Idle/movement animation uses bobbing, pulsing eyes/reactor, cloak/blade motion and slime motion.
+- All four enemy types can now appear from the early part of a run; later SP tiers increase pressure.
+- Existing 5000 SP goal and consumable shop systems are preserved.
+
+## v15.3 Monster Renderer Fix
+- Replaced the actual `drawEntity(e)` enemy branches instead of adding a competing renderer.
+- Old red/purple boxes and old triangle obstacle are no longer used for Slippage/MEV/Price Impact.
+- Slippage = animated red slime.
+- MEV = animated purple hooded rogue with blades.
+- Price Impact = animated red spiked beast.
+- MEV Bot = large animated robot with pulsing reactor.
+- Enemy labels remain above each monster.
+- Adds `v15.3 • MONSTERS ON` marker so the deployed build can be verified visually.
