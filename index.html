@@ -1216,16 +1216,12 @@ function drawSwordSlashFx(){
 function drawStabiShieldVisual(){
  const stock=itemStock('shield');
  if(stock<=0 && P.shield<=0)return;
+ const pulse=1+Math.sin(performance.now()/170)*.025;
  ctx.save();
- ctx.strokeStyle='#8fffee';
- ctx.shadowColor='#8fffee';
- ctx.shadowBlur=11;
- ctx.globalAlpha=.72;
- ctx.lineWidth=3;
- ctx.beginPath();
- ctx.ellipse(P.x+P.w/2,P.y+P.h/2,P.w*.58,P.h*.54,0,0,Math.PI*2);
- ctx.stroke();
- ctx.restore();
+ ctx.strokeStyle='#72fff0';ctx.fillStyle='rgba(114,255,240,.10)';
+ ctx.shadowColor='#72fff0';ctx.shadowBlur=14;ctx.lineWidth=3;
+ ctx.beginPath();ctx.ellipse(P.x+P.w/2,P.y+P.h/2,P.w*.67*pulse,P.h*.61*pulse,0,0,Math.PI*2);
+ ctx.fill();ctx.stroke();ctx.restore();
 }
 function drawPlayer(){
  const ducking=(spriteState==='slide');
@@ -1266,6 +1262,18 @@ function drawPlayer(){
  ctx.drawImage(sprite,drawX,drawY,baseW,baseH);
  ctx.restore();
 }
+
+const customMonsters={};
+[['slippage','slippage_move.png'],['mev','mev_move.png'],['price','price_move.png'],['bot','bot_move.png']]
+.forEach(([k,u])=>{let i=new Image();i.src=u;customMonsters[k]=i});
+function drawCustomMonster(img,e,frames,scale){
+ if(!img||!img.complete||!img.naturalWidth)return false;
+ const fw=img.naturalWidth/frames, fh=img.naturalHeight;
+ const fr=Math.floor(performance.now()/190)%frames;
+ const dw=e.w*scale, dh=dw*fh/fw;
+ ctx.drawImage(img,fr*fw,0,fw,fh,e.x+(e.w-dw)/2,e.y+e.h-dh,dw,dh);
+ return true;
+}
 function drawEntity(e){
  const t=performance.now()/1000;
 
@@ -1278,122 +1286,21 @@ function drawEntity(e){
  }
 
  if(e.type==='slippage'){
-   const bob=Math.sin(t*7+e.x*.025)*3;
-   const cx=e.x+e.w/2, y=e.y+bob, floor=y+e.h;
-   ctx.save();ctx.shadowColor='#ff334e';ctx.shadowBlur=12;
-   ctx.fillStyle='#e63c4c';
-   ctx.beginPath();
-   ctx.moveTo(e.x+3,floor-5);
-   ctx.quadraticCurveTo(e.x+5,y+14,cx-13,y+11);
-   ctx.lineTo(cx-7,y-3);
-   ctx.lineTo(cx+1,y+10);
-   ctx.lineTo(cx+13,y+1);
-   ctx.lineTo(cx+11,y+14);
-   ctx.quadraticCurveTo(e.x+e.w-3,y+17,e.x+e.w-3,floor-5);
-   ctx.quadraticCurveTo(cx,floor+3,e.x+3,floor-5);
-   ctx.fill();
-
-   ctx.fillStyle='#fff4dd';
-   ctx.beginPath();ctx.moveTo(cx-20,y+26);ctx.lineTo(cx-5,y+30);ctx.lineTo(cx-18,y+38);ctx.fill();
-   ctx.beginPath();ctx.moveTo(cx+20,y+26);ctx.lineTo(cx+5,y+30);ctx.lineTo(cx+18,y+38);ctx.fill();
-   ctx.fillStyle='#350710';
-   ctx.fillRect(cx-13,y+31,4,4);ctx.fillRect(cx+9,y+31,4,4);
-
-   ctx.strokeStyle='#6f1020';ctx.lineWidth=3;ctx.beginPath();
-   ctx.arc(cx,y+44,10,.15,Math.PI-.15);ctx.stroke();
-   ctx.restore();
-   drawPixelText('SLIPPAGE',cx,y-10,8,'#ff91a0','center');
-   return;
+   drawCustomMonster(customMonsters.slippage,e,2,1.20);
+   drawPixelText('SLIPPAGE',e.x+e.w/2,e.y-12,8,'#ff8290','center');return;
  }
-
  if(e.type==='mev'){
-   const bob=Math.sin(t*5+e.x*.02)*3;
-   const cx=e.x+e.w/2, y=e.y+bob, cy=y+e.h/2;
-   ctx.save();ctx.shadowColor='#a759ff';ctx.shadowBlur=13;
-
-   // cloak
-   ctx.fillStyle='#51248b';
-   ctx.beginPath();ctx.moveTo(cx,y);
-   ctx.quadraticCurveTo(e.x+5,cy-8,e.x+8,y+e.h);
-   ctx.lineTo(e.x+e.w-8,y+e.h);
-   ctx.quadraticCurveTo(e.x+e.w-5,cy-8,cx,y);ctx.fill();
-
-   // hood / face
-   ctx.fillStyle='#18072c';ctx.beginPath();ctx.arc(cx,cy-7,18,0,Math.PI*2);ctx.fill();
-   ctx.fillStyle='#ed74ff';ctx.fillRect(cx-11,cy-9,7,4);ctx.fillRect(cx+4,cy-9,7,4);
-
-   // blades
-   const blade=9+Math.sin(t*9)*3;
-   ctx.strokeStyle='#d5a5ff';ctx.lineWidth=4;
-   ctx.beginPath();ctx.moveTo(e.x+13,cy+7);ctx.lineTo(e.x-blade,cy+19);ctx.stroke();
-   ctx.beginPath();ctx.moveTo(e.x+e.w-13,cy+7);ctx.lineTo(e.x+e.w+blade,cy+19);ctx.stroke();
-   ctx.restore();
-
-   drawPixelText('MEV',cx,y-11,9,'#d4a5ff','center');
-   return;
+   drawCustomMonster(customMonsters.mev,e,2,1.30);
+   drawPixelText('MEV',e.x+e.w/2,e.y-16,9,'#ca9aff','center');return;
  }
-
  if(e.type==='spike'){
-   const bob=Math.sin(t*4+e.x*.015)*2;
-   const cx=e.x+e.w/2, y=e.y+bob;
-   ctx.save();ctx.shadowColor='#ff5839';ctx.shadowBlur=12;
-
-   // spiked beast body
-   ctx.fillStyle='#ba382f';ctx.beginPath();ctx.ellipse(cx+5,y+e.h*.63,e.w*.40,e.h*.31,0,0,Math.PI*2);ctx.fill();
-   // head / snout
-   ctx.beginPath();ctx.ellipse(e.x+16,y+e.h*.62,17,14,-.12,0,Math.PI*2);ctx.fill();
-
-   // spikes
-   ctx.fillStyle='#ff9b5d';
-   for(let i=0;i<4;i++){
-     const sx=e.x+20+i*11;
-     ctx.beginPath();ctx.moveTo(sx,y+19);ctx.lineTo(sx+5,y-4-(i%2)*5);ctx.lineTo(sx+10,y+20);ctx.fill();
-   }
-   // horn
-   ctx.beginPath();ctx.moveTo(e.x+7,y+23);ctx.lineTo(e.x-8,y+15);ctx.lineTo(e.x+8,y+31);ctx.fill();
-   // eye
-   ctx.fillStyle='#ffe46b';ctx.fillRect(e.x+10,y+19,5,4);
-   ctx.restore();
-
-   drawPixelText('PRICE IMPACT',cx,y-11,7,'#ffad91','center');
-   return;
+   drawCustomMonster(customMonsters.price,e,2,1.60);
+   drawPixelText('PRICE IMPACT',e.x+e.w/2,e.y-20,7,'#ff9d78','center');return;
  }
-
  if(e.type==='boss'){
-   const bob=Math.sin(t*3+e.x*.01)*2;
-   const cx=e.x+e.w/2,y=e.y+bob,p=.5+.5*Math.sin(t*6);
-   ctx.save();ctx.shadowColor='#9364ff';ctx.shadowBlur=16;
-
-   // legs
-   ctx.fillStyle='#3b4553';ctx.fillRect(e.x+19,y+78,26,27);ctx.fillRect(e.x+65,y+78,26,27);
-   // arms
-   ctx.fillStyle='#596474';ctx.beginPath();ctx.arc(e.x+17,y+51,18,0,Math.PI*2);ctx.fill();
-   ctx.beginPath();ctx.arc(e.x+93,y+51,18,0,Math.PI*2);ctx.fill();
-   ctx.fillRect(e.x+3,y+50,22,36);ctx.fillRect(e.x+85,y+50,22,36);
-
-   // torso
-   ctx.fillStyle='#414b59';ctx.fillRect(e.x+25,y+20,60,67);
-   ctx.strokeStyle='#8793a0';ctx.lineWidth=3;ctx.strokeRect(e.x+25,y+20,60,67);
-
-   // head
-   ctx.fillStyle='#202734';ctx.fillRect(e.x+37,y+5,36,26);
-   ctx.fillStyle='#ff4257';ctx.fillRect(e.x+44,y+15,7,4);ctx.fillRect(e.x+59,y+15,7,4);
-
-   // reactor
-   ctx.fillStyle=`rgba(255,55,72,${.72+.28*p})`;
-   ctx.beginPath();ctx.arc(cx,y+51,13+3*p,0,Math.PI*2);ctx.fill();
-
-   // antenna
-   ctx.strokeStyle='#aeb9c5';ctx.lineWidth=2;
-   ctx.beginPath();ctx.moveTo(cx,y+5);ctx.lineTo(cx,y-8);ctx.stroke();
-   ctx.fillStyle='#ff465b';ctx.beginPath();ctx.arc(cx,y-10,3+2*p,0,Math.PI*2);ctx.fill();
-   ctx.restore();
-
-   drawPixelText('MEV BOT',cx,y-12,9,'#80eaff','center');
-   return;
+   drawCustomMonster(customMonsters.bot,e,2,1.38);
+   drawPixelText('MEV BOT',e.x+e.w/2,e.y-22,9,'#7de9ff','center');return;
  }
-
- // pickups
  if(e.type==='shield'){
    ctx.save();ctx.strokeStyle='#9dfff0';ctx.fillStyle='#173c38';ctx.lineWidth=3;ctx.shadowColor='#9dfff0';ctx.shadowBlur=10;
    ctx.beginPath();ctx.moveTo(e.x+e.w/2,e.y+2);ctx.lineTo(e.x+e.w-3,e.y+10);ctx.lineTo(e.x+e.w-7,e.y+e.h-7);
@@ -2158,10 +2065,10 @@ setTimeout(()=>{
 })();
 </script>
 
-<div id="buildMark" style="position:fixed;right:8px;bottom:8px;z-index:60;font:8px monospace;color:#88aaa4;pointer-events:none">v15.3 MONSTER RENDER FIX</div>
+<div id="buildMark" style="position:fixed;right:8px;bottom:8px;z-index:60;font:8px monospace;color:#88aaa4;pointer-events:none">v15.4 USER SPRITES</div>
 
 <div id="monsterFixMark" style="position:fixed;right:8px;bottom:20px;z-index:70;
 font:8px monospace;color:#ffb0c0;background:#201016cc;border:1px solid #7a3a4a;
-border-radius:6px;padding:4px 6px;pointer-events:none">v15.3 • MONSTERS ON</div>
+border-radius:6px;padding:4px 6px;pointer-events:none">v15.4 • CUSTOM MONSTERS</div>
 </body>
 </html>

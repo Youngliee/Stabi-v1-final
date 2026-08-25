@@ -167,3 +167,10 @@ This build intentionally combines the requested systems so they can be bug-teste
 - MEV Bot = large animated robot with pulsing reactor.
 - Enemy labels remain above each monster.
 - Adds `v15.3 • MONSTERS ON` marker so the deployed build can be verified visually.
+
+## v15.4
+- Custom user monster sprites for Slippage, MEV, Price Impact and MEV Bot.
+- Two-frame movement animation.
+- Monster names stay above each enemy.
+- Single cyan shield bubble around Stabi.
+- Existing v15.3 gameplay systems preserved.
