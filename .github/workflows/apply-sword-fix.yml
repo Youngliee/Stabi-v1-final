@@ -1,0 +1,23 @@
+name: Apply Stability Sword enemy detection fix
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch sword auto attack
+        run: |
+          python3 scripts/apply-game-fix.py
+      - name: Remove patch helpers and commit
+        run: |
+          rm -f .github/workflows/apply-sword-fix.yml scripts/apply-game-fix.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/apply-sword-fix.yml scripts/apply-game-fix.py
+          git commit -m "Fix Stability Sword auto attack for all enemies"
+          git push
