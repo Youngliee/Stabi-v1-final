@@ -19,8 +19,9 @@ jobs:
           ref: main
 
       - name: Patch Stability Sword logic
-        shell: python
+        shell: bash
         run: |
+          python - <<'PY'
           from pathlib import Path
 
           path = Path('index.html')
@@ -35,8 +36,6 @@ jobs:
  if(!e || !['slippage','mev','spike','boss'].includes(e.type))return false;
  if(e.__destroyed || swordSlashCooldown>0 || swordStock()<=0)return false;
 
- // Use the real player width instead of the smaller legacy hitbox.
- // This makes the sword trigger reliably before an enemy collides with the player.
  const playerFront=P.x+P.w;
  const enemyLeft=e.x;
  const enemyRight=e.x+e.w;
@@ -66,6 +65,7 @@ jobs:
 
           text = text[:start] + new_fn + text[end:]
           path.write_text(text, encoding='utf-8')
+          PY
 
       - name: Commit fix
         run: |
