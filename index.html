@@ -924,24 +924,29 @@ function swordStock(){return window.StabiStock?.stock?.('sword') ?? Number(local
 function consumeSword(){if(window.StabiStock?.consume)return window.StabiStock.consume('sword');const n=Number(localStorage.getItem('stabi_stock_sword')||0);if(n<=0)return false;localStorage.setItem('stabi_stock_sword',String(n-1));return true}
 function trySwordSlash(e){
  if(!e || !['slippage','mev','spike','boss'].includes(e.type))return false;
- if(swordSlashCooldown>0 || swordStock()<=0)return false;
+ if(e.__destroyed || swordSlashCooldown>0 || swordStock()<=0)return false;
 
- const playerFront=P.x+STABI_HITBOX.w;
- const distance=e.x-playerFront;
- const verticalClose=(e.y+e.h>P.y+8) && (e.y<P.y+(P.duck?STABI_HITBOX.h*.62:STABI_HITBOX.h)+10);
- if(distance<-15 || distance>150 || !verticalClose)return false;
+ const playerFront=P.x+P.w;
+ const enemyLeft=e.x;
+ const enemyRight=e.x+e.w;
+ const attackReach=Math.max(125,Math.min(190,P.w+80));
+ const playerH=P.duck?Math.max(56,P.h*.62):P.h;
+ const inFront=enemyRight>=P.x-8 && enemyLeft<=playerFront+attackReach;
+ const verticalClose=(e.y+e.h>P.y+4) && (e.y<P.y+playerH+14);
+ if(!inFront || !verticalClose)return false;
 
  if(!consumeSword())return false;
- swordSlashCooldown=.32;
- slashFxTime=.48;
+ swordSlashCooldown=.22;
+ slashFxTime=.52;
  slashFxSkin=equippedSkin||'default';
 
- // Canvas-only effect: unique particles per skin.
  const slashColor=slashFxSkin==='usdz'?'#ffd45a':(slashFxSkin==='cyber'?'#b96cff':'#8fffee');
- burst(e.x+e.w/2,e.y+e.h/2,slashColor,8);
+ burst(Math.max(playerFront,e.x)+e.w*.35,e.y+e.h/2,slashColor,12);
  score+=50;
- toast('⚔️ AUTO SLASH!  SWORD ×'+swordStock());
- try{beep(820,.06)}catch(_){}
+
+ const enemyName={slippage:'SLIPPAGE',mev:'MEV',spike:'PRICE IMPACT',boss:'MEV BOT'}[e.type]||'ENEMY';
+ toast('⚔️ '+enemyName+' SLASHED!  SWORD ×'+swordStock());
+ try{beep(820,.07)}catch(_){}
  e.__destroyed=true;
  return true;
 }
