@@ -1,0 +1,80 @@
+name: Fix Stability Sword Auto Attack
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/fix-sword-auto-attack.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-game:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Patch Stability Sword logic
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+
+          start = text.find('function trySwordSlash(e){')
+          end = text.find('\nfunction collect(e){', start)
+          if start == -1 or end == -1:
+              raise SystemExit('Could not find trySwordSlash function')
+
+          new_fn = r'''function trySwordSlash(e){
+ if(!e || !['slippage','mev','spike','boss'].includes(e.type))return false;
+ if(e.__destroyed || swordSlashCooldown>0 || swordStock()<=0)return false;
+
+ // Use the real player width instead of the smaller legacy hitbox.
+ // This makes the sword trigger reliably before an enemy collides with the player.
+ const playerFront=P.x+P.w;
+ const enemyLeft=e.x;
+ const enemyRight=e.x+e.w;
+ const attackReach=Math.max(120,Math.min(185,P.w+75));
+ const distance=enemyLeft-playerFront;
+ const overlapAhead=enemyRight>=P.x-8 && enemyLeft<=playerFront+attackReach;
+ const playerH=P.duck?Math.max(56,P.h*.62):P.h;
+ const verticalClose=(e.y+e.h>P.y+4) && (e.y<P.y+playerH+14);
+
+ if(!overlapAhead || distance>attackReach || !verticalClose)return false;
+ if(!consumeSword())return false;
+
+ swordSlashCooldown=.22;
+ slashFxTime=.52;
+ slashFxSkin=equippedSkin||'default';
+
+ const slashColor=slashFxSkin==='usdz'?'#ffd45a':(slashFxSkin==='cyber'?'#b96cff':'#8fffee');
+ burst(Math.max(playerFront,e.x)+e.w*.35,e.y+e.h/2,slashColor,12);
+ score+=50;
+
+ const enemyName={slippage:'SLIPPAGE',mev:'MEV',spike:'PRICE IMPACT',boss:'MEV BOT'}[e.type]||'ENEMY';
+ toast('⚔️ '+enemyName+' SLASHED!  SWORD ×'+swordStock());
+ try{beep(820,.07)}catch(_){}
+ e.__destroyed=true;
+ return true;
+}'''
+
+          text = text[:start] + new_fn + text[end:]
+          path.write_text(text, encoding='utf-8')
+
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git commit -m "Fix sword auto attack against all enemy types"
+          git push origin main
