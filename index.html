@@ -762,7 +762,7 @@ let running=false,paused=false,last=0,world=0,score=0,coins=0,lives=3,phase=0,sp
   _banner?.classList.remove("finish-show");
   _flash?.classList.remove("on");
 
-let spawnClock=0,powerClock=0,waveClock=0,shake=0,flash=0,bossMode=false;
+let spawnClock=0,powerClock=0,waveClock=0,shake=0,flash=0,bossMode=false,lastBossWorld=-9999;
 let entities=[],particles=[],clouds=[],buildings=[];
 let audio=true;
 const floorRatio=.72;
@@ -793,6 +793,12 @@ function burst(x,y,col,n=10){
  for(let i=0;i<n;i++)particles.push({x,y,vx:(Math.random()-.5)*170,vy:(Math.random()-.9)*160,life:.6+Math.random()*.5,col,size:2+Math.random()*4})
 }
 function spawn(type,extra={}){
+ // Keep MEV Bots far enough apart so the player always has room to land.
+ if(type==='boss'){
+   const BOSS_MIN_GAP=650; // world units (~65m)
+   if(world-lastBossWorld<BOSS_MIN_GAP)return;
+   lastBossWorld=world;
+ }
  let e={type,x:W+60,y:0,w:44,h:44,hit:false,...extra};
  const fy=floorY();
  if(type==='coin'){e.w=e.h=34;e.y=fy-50-(Math.random()<.35?70:0)}
@@ -964,7 +970,7 @@ function collect(e){
  remove(e)
 }
 function startGame(){
- entities=[];particles=[];running=true;paused=false;last=0;world=0;score=0;coins=0;lives=3;phase=0;speed=280;victoryTriggered=false; finishApproach=false; finishApproachT=0; window.__stabiSwordUsed=false; swordSlashCooldown=0; slashFxTime=0; window.StabiPortalFinish?.reset?.();spawnClock=.5;powerClock=0;waveClock=0;bossMode=false;
+ entities=[];particles=[];running=true;paused=false;last=0;world=0;score=0;coins=0;lives=3;phase=0;speed=280;victoryTriggered=false; finishApproach=false; finishApproachT=0; window.__stabiSwordUsed=false; swordSlashCooldown=0; slashFxTime=0; window.StabiPortalFinish?.reset?.();spawnClock=.5;powerClock=0;waveClock=0;bossMode=false;lastBossWorld=-9999;
  applyPlayerSize(); Object.assign(P,{y:floorY()-P.h,vy:0,onGround:true,jumps:0,duck:false,shield:0,dash:0,inv:0,anim:0}); setSpriteState('run',true); endAnimState=null;
  document.getElementById('startScreen').style.display='none';
   victoryTriggered=false;
