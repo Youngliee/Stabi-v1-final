@@ -1,0 +1,48 @@
+name: Fix target and skin size
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch game target and skin render size
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          # Hard-set the real runtime finish target.
+          s=s.replace('const STABI_TARGET_SP = 5000;', 'const STABI_TARGET_SP = 3000;')
+          s=s.replace('const STABI_TARGET_SP=5000;', 'const STABI_TARGET_SP=3000;')
+          # Normalize skin rendering so equipped skins use the same visible scale as default.
+          # Handle common drawImage forms used by the sprite renderer.
+          s=s.replace('ctx.drawImage(img,P.x,P.y,P.w,P.h)', 'ctx.drawImage(img,P.x,P.y,P.w,P.h)')
+          s=s.replace('const skinScale=.72;', 'const skinScale=1;')
+          s=s.replace('const skinScale = .72;', 'const skinScale = 1;')
+          s=s.replace('const skinScale=.75;', 'const skinScale=1;')
+          s=s.replace('const skinScale = .75;', 'const skinScale = 1;')
+          s=s.replace('const skinScale=.8;', 'const skinScale=1;')
+          s=s.replace('const skinScale = .8;', 'const skinScale = 1;')
+          s=s.replace('P.w*.72,P.h*.72', 'P.w,P.h')
+          s=s.replace('P.w*.75,P.h*.75', 'P.w,P.h')
+          s=s.replace('P.w*.8,P.h*.8', 'P.w,P.h')
+          # Force a final visual-size multiplier for skin sprites, without changing hitbox/gameplay.
+          marker='function drawPlayer(){'
+          if marker in s and 'STABI_SKIN_VISUAL_SCALE' not in s:
+              s=s.replace(marker, "const STABI_SKIN_VISUAL_SCALE=1.18;\n"+marker)
+              s=s.replace('ctx.drawImage(img,dx,dy,dw,dh);', "if(equippedSkin&&equippedSkin!=='default'){const nw=dw*STABI_SKIN_VISUAL_SCALE,nh=dh*STABI_SKIN_VISUAL_SCALE;dx-=((nw-dw)/2);dy-=(nh-dh);dw=nw;dh=nh;}ctx.drawImage(img,dx,dy,dw,dh);")
+          p.write_text(s)
+          PY
+      - name: Remove workflow and commit
+        run: |
+          rm -f .github/workflows/fix-target-skin-size.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/fix-target-skin-size.yml
+          git commit -m "Fix Phase 2 target to 3000 SP and match skin visual size" || exit 0
+          git push
