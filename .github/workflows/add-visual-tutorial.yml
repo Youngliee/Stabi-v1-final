@@ -1,0 +1,34 @@
+name: Add visual onboarding tutorial
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Add visual tutorial cards
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html'); s=p.read_text()
+          css='''\n<style id="visualTutorialStyle">\n.visualGuide{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.guidePanel{background:#061918;border:2px solid #2d625d;border-radius:12px;padding:9px}.guidePanel.good{border-color:#4db9a8}.guidePanel.bad{border-color:#8b4050}.guideHead{font-size:11px;font-weight:1000;margin-bottom:7px}.good .guideHead{color:#79ead7}.bad .guideHead{color:#ff8f9d}.guideItems{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.guideItem{min-height:92px;background:#0b2928;border:1px solid #245b57;border-radius:9px;padding:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.guideItem img{width:58px;height:52px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 4px 3px #0008)}.guideItem .fakeIcon{height:52px;display:grid;place-items:center;font-size:35px}.guideItem b{font-size:9px;color:#effffc;margin-top:3px}.guideItem small{font-size:7px;color:#9ac0bb;margin-top:2px}.weaponGuide{display:flex;align-items:center;justify-content:center;gap:10px;margin:9px 0;padding:8px;border:1px solid #d7ae38;border-radius:10px;background:#2a2414}.weaponGuide .swordIcon{font-size:31px}.weaponGuide b{display:block;color:#ffd75f;font-size:10px}.weaponGuide span{font-size:8px;color:#e8dbac}@media(max-width:620px){.visualGuide{gap:6px}.guidePanel{padding:6px}.guideItems{grid-template-columns:1fr 1fr;gap:4px}.guideItem{min-height:75px;padding:3px}.guideItem img{width:45px;height:40px}.guideItem .fakeIcon{height:40px;font-size:28px}.guideItem b{font-size:7px}.guideItem small{font-size:6px}.weaponGuide{margin:6px 0;padding:5px}.howMission{margin:6px 0}.howCard{max-height:96vh}}\n</style>\n'''
+          if 'id="visualTutorialStyle"' not in s:
+              s=s.replace('</head>',css+'</head>',1)
+          old='''<div class="howGrid">\n<div class="howBox"><b>🏆 HOW TO WIN</b><span>Collect 40 USDZ. Each USDZ fills the Phase 2 meter. Reach 100% to unlock Phase 2 and finish the run.</span></div>\n<div class="howBox"><b>💀 HOW YOU LOSE</b><span>Getting hit by Slippage, MEV or dangerous obstacles costs a life. Lose all lives and the run ends.</span></div>\n<div class="howBox"><b>🛡️ HOW TO SURVIVE</b><span>Jump or double-jump over hazards. Use the Zero-Slippage Shield for protection and Stability Dash to escape danger.</span></div>\n<div class="howBox"><b>🎮 CONTROLS</b><span>Tap / ↑ = Jump • Double tap = Double Jump • ↓ = Ground Slam • Dash button / key = Stability Dash.</span></div>'''
+          new='''<div class="visualGuide">\n<div class="guidePanel good"><div class="guideHead">✓ COLLECT</div><div class="guideItems">\n<div class="guideItem"><div class="fakeIcon">🪙</div><b>USDZ</b><small>GAIN POINTS</small></div>\n<div class="guideItem"><div class="fakeIcon">🛡️</div><b>SHIELD</b><small>BLOCK 1 HIT</small></div>\n<div class="guideItem"><div class="fakeIcon">❤️</div><b>HEART</b><small>+1 LIFE</small></div>\n<div class="guideItem"><div class="fakeIcon">⚡</div><b>STABILITY DASH</b><small>BREAK THROUGH</small></div>\n</div></div>\n<div class="guidePanel bad"><div class="guideHead">✕ AVOID / DESTROY</div><div class="guideItems">\n<div class="guideItem"><div class="fakeIcon">🔴</div><b>SLIPPAGE</b><small>HAZARD</small></div>\n<div class="guideItem"><img src="mev_move.png" alt="MEV"><b>MEV</b><small>ENEMY</small></div>\n<div class="guideItem"><img src="bot_move.png" alt="MEV Bot"><b>MEV BOT</b><small>ENEMY</small></div>\n<div class="guideItem"><img src="price_move.png" alt="Price Impact"><b>PRICE IMPACT</b><small>ENEMY</small></div>\n</div></div>\n</div>\n<div class="weaponGuide"><div class="swordIcon">⚔️</div><div><b>STABILITY SWORD</b><span>AUTO-SLASHES ENEMIES WHEN THEY GET CLOSE</span></div></div>\n<div class="howGrid">\n<div class="howBox"><b>🏆 HOW TO WIN</b><span>Collect USDZ and fill the Phase 2 meter to 100%.</span></div>\n<div class="howBox"><b>🎮 CONTROLS</b><span>Tap / ↑ Jump • Double tap Double Jump • ↓ Ground Slam • ⚡ Dash.</span></div>'''
+          if old not in s: raise SystemExit('tutorial block not found')
+          s=s.replace(old,new,1)
+          p.write_text(s)
+          PY
+      - name: Remove workflow and commit
+        run: |
+          rm -f .github/workflows/add-visual-tutorial.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/add-visual-tutorial.yml
+          git commit -m "Add visual pre-game collect and hazard guide"
+          git push
