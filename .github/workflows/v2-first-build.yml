@@ -1,0 +1,105 @@
+name: Build Stabi Runner V2 preview
+on:
+  push:
+    branches: [stabi-runner-v2-private]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply V2 visual upgrade
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('<title>Stabi Runner: Road to Phase 2</title>','<title>Stabi Runner V2: Road to Phase 2</title>')
+          s=s.replace('<div class="big">STABI RUNNER</div><div class="small">ROAD TO PHASE 2</div>','<div class="big">STABI RUNNER V2</div><div class="small">PRIVATE PREVIEW • ROAD TO PHASE 2</div>')
+          s=s.replace('<div class="subtitle">ROAD TO PHASE 2</div>','<div class="subtitle">V2 PRIVATE PREVIEW • ROAD TO PHASE 2</div>',1)
+          old="""function drawBackground(){
+ const fy=floorY();
+ ctx.fillStyle='#103d4a';ctx.fillRect(0,0,W,H);
+ // sky bands
+ ctx.fillStyle='#174f62';ctx.fillRect(0,0,W,H*.34);
+ ctx.fillStyle='#1a6071';ctx.fillRect(0,H*.34,W,H*.18);
+ // clouds
+ for(const c of clouds){
+   let x=(c.x-world*.04)%(W+220);if(x<-120)x+=W+220;
+   ctx.fillStyle='#d9f7f2';ctx.fillRect(x,c.y,c.s*1.6,10);ctx.fillRect(x+10,c.y-8,c.s,10);ctx.fillRect(x+25,c.y+5,c.s*1.2,8)
+ }
+ // skyline
+ ctx.fillStyle='#163c49';
+ for(const b of buildings){
+   let x=(b.x-world*.08)%(W+180);if(x<-100)x+=W+180;
+   ctx.fillRect(x,fy-b.h-70,b.w,b.h);
+   ctx.fillStyle='#2d6871';
+   for(let yy=fy-b.h-60;yy<fy-80;yy+=18)for(let xx=x+8;xx<x+b.w-5;xx+=16)ctx.fillRect(xx,yy,5,7);
+   ctx.fillStyle='#163c49';
+ }
+ // far bridge
+ ctx.strokeStyle='#3e8583';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,fy-90);ctx.lineTo(W,fy-90);ctx.stroke();
+ // ground
+ ctx.fillStyle='#0a2422';ctx.fillRect(0,fy,W,H-fy);
+ ctx.fillStyle='#244a45';ctx.fillRect(0,fy,W,7);
+ ctx.fillStyle='#c49b34';
+ for(let x=-(world*.35)%70;x<W;x+=70)ctx.fillRect(x,fy+12,34,4);
+ ctx.fillStyle='#17312e';
+ for(let x=-(world*.55)%54;x<W;x+=54)ctx.fillRect(x,fy+50,28,3);
+}
+"""
+          new="""function drawBackground(){
+ const fy=floorY(), t=performance.now()/1000;
+ // deeper V2 gradient sky
+ const sky=ctx.createLinearGradient(0,0,0,fy);
+ sky.addColorStop(0,'#071923'); sky.addColorStop(.45,'#0d3b4a'); sky.addColorStop(1,'#15545b');
+ ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+ // distant glow / moon
+ ctx.save();ctx.globalAlpha=.20;ctx.fillStyle='#8fffee';ctx.beginPath();ctx.arc(W*.78,H*.18,54+Math.sin(t*.7)*3,0,Math.PI*2);ctx.fill();ctx.restore();
+ // far parallax stars
+ ctx.fillStyle='rgba(210,255,248,.55)';
+ for(let i=0;i<26;i++){const sx=((i*97-world*.018)%(W+120)+W+120)%(W+120)-60;const sy=28+(i*53)%Math.max(80,H*.34);ctx.fillRect(sx,sy,2,2)}
+ // clouds: slow layer
+ for(const c of clouds){
+   let x=(c.x-world*.035)%(W+220);if(x<-120)x+=W+220;
+   ctx.fillStyle='rgba(220,255,250,.72)';ctx.fillRect(x,c.y,c.s*1.6,10);ctx.fillRect(x+10,c.y-8,c.s,10);ctx.fillRect(x+25,c.y+5,c.s*1.2,8)
+ }
+ // far city layer
+ ctx.fillStyle='#102f3a';
+ for(const b of buildings){
+   let x=(b.x-world*.055)%(W+180);if(x<-100)x+=W+180;
+   ctx.fillRect(x,fy-b.h-76,b.w,b.h);
+ }
+ // near city layer with glowing windows
+ for(const b of buildings){
+   let x=(b.x*1.55-world*.11)%(W+260);if(x<-120)x+=W+260;
+   const bw=Math.max(30,b.w*.78), bh=b.h*.72;
+   ctx.fillStyle='#173f48';ctx.fillRect(x,fy-bh-48,bw,bh);
+   ctx.fillStyle='rgba(111,224,207,.32)';
+   for(let yy=fy-bh-38;yy<fy-58;yy+=20)for(let xx=x+7;xx<x+bw-5;xx+=15)ctx.fillRect(xx,yy,4,6);
+ }
+ // bridge and energy rail
+ ctx.strokeStyle='#3e8583';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(0,fy-90);ctx.lineTo(W,fy-90);ctx.stroke();
+ ctx.save();ctx.globalAlpha=.45+.15*Math.sin(t*2);ctx.strokeStyle='#6fe0cf';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,fy-84);ctx.lineTo(W,fy-84);ctx.stroke();ctx.restore();
+ // ground with stronger motion layers
+ ctx.fillStyle='#081e1c';ctx.fillRect(0,fy,W,H-fy);
+ ctx.fillStyle='#285b54';ctx.fillRect(0,fy,W,7);
+ ctx.fillStyle='#caa640';for(let x=-(world*.42)%72;x<W;x+=72)ctx.fillRect(x,fy+12,36,4);
+ ctx.fillStyle='#1c3b37';for(let x=-(world*.68)%56;x<W;x+=56)ctx.fillRect(x,fy+49,30,3);
+ ctx.fillStyle='rgba(111,224,207,.16)';for(let x=-(world*.95)%120;x<W;x+=120)ctx.fillRect(x,fy+78,54,2);
+}
+"""
+          if old in s:s=s.replace(old,new)
+          else: raise SystemExit('drawBackground block not found')
+          p.write_text(s)
+          PY
+      - name: Remove workflow and commit
+        run: |
+          rm -f .github/workflows/v2-first-build.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/v2-first-build.yml
+          git commit -m "Create Stabi Runner V2 private preview visuals" || exit 0
+          git push
