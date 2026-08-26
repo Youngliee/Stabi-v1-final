@@ -1090,7 +1090,7 @@ const STABI_HITBOX={w:54,h:72};
 
 
 // v15 consumable runtime. Stability Sword logic stays unchanged.
-const STABI_TARGET_SP = 5000;
+const STABI_TARGET_SP = 3000;
 
 function itemStock(id){
   return window.StabiStock?.stock?.(id) ?? Number(localStorage.getItem('stabi_stock_'+id)||0);
@@ -1257,6 +1257,7 @@ function drawStabiShieldVisual(){
  ctx.beginPath();ctx.ellipse(P.x+P.w/2,P.y+P.h/2,P.w*.67*pulse,P.h*.61*pulse,0,0,Math.PI*2);
  ctx.fill();ctx.stroke();ctx.restore();
 }
+const STABI_SKIN_VISUAL_SCALE=1.18;
 function drawPlayer(){
  const ducking=(spriteState==='slide');
  const visualScale=stabiVisualScale(spriteState);
