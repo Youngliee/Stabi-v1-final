@@ -1,0 +1,78 @@
+name: Fix live skin equip
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch live equip behavior
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text()
+
+          # Add a runtime helper that immediately reloads the equipped skin state,
+          # refreshes the sprite frame, and reapplies player visual sizing without reload.
+          helper=r'''
+function stabiApplyEquippedSkinNow(id){
+  try{
+    if(id) equippedSkin=id;
+    if(typeof setSpriteState==='function') setSpriteState(P&&P.onGround?'run':'jump',true);
+    if(typeof applyPlayerSize==='function') applyPlayerSize();
+    if(typeof updateSpriteAnimation==='function') updateSpriteAnimation(0);
+    const img=document.querySelector('.character');
+    if(img && typeof spriteFor==='function'){
+      const src=spriteFor(equippedSkin||'default','run',0);
+      if(src) img.src=src;
+    }
+    window.dispatchEvent(new CustomEvent('stabi-skin-changed',{detail:{skin:equippedSkin||id}}));
+  }catch(e){console.warn('skin apply',e)}
+}
+'''
+          if 'function stabiApplyEquippedSkinNow' not in s:
+              anchor='function applyPlayerSize()'
+              i=s.find(anchor)
+              if i!=-1:s=s[:i]+helper+s[i:]
+
+          # When shop code assigns equippedSkin, apply it immediately after assignment.
+          s=re.sub(r'(equippedSkin\s*=\s*[^;]+;)(?!\s*stabiApplyEquippedSkinNow)', r'\1 stabiApplyEquippedSkinNow(equippedSkin);', s)
+
+          # Also catch EQUIP button clicks generically in case the shop stores selection first.
+          listener=r'''
+document.addEventListener('click',function(e){
+  const b=e.target?.closest?.('button');
+  if(!b)return;
+  const txt=(b.textContent||'').trim().toUpperCase();
+  if(!txt.includes('EQUIP'))return;
+  setTimeout(()=>{
+    try{
+      const keys=['stabi_equipped_skin','stabi_skin_equipped','equippedSkin','stabiEquippedSkin'];
+      let id=null;
+      for(const k of keys){const v=localStorage.getItem(k);if(v){id=v;break}}
+      if(!id && typeof equippedSkin!=='undefined') id=equippedSkin;
+      if(id) stabiApplyEquippedSkinNow(id);
+    }catch(_){}
+  },0);
+},true);
+'''
+          if "stabi-skin-changed" not in s.split('</script>')[-2]:
+              pos=s.rfind('</script>')
+              if pos!=-1:s=s[:pos]+listener+s[pos:]
+
+          p.write_text(s)
+          PY
+      - name: Remove workflow and commit
+        run: |
+          rm -f .github/workflows/fix-live-skin-equip.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/fix-live-skin-equip.yml
+          git commit -m "Apply equipped skins immediately without page refresh" || exit 0
+          git push
