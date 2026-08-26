@@ -1,0 +1,55 @@
+name: Fix combat and monster visuals
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch monster grounding sword and shield
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+
+          patches=[
+            ("drawCustomMonster(customMonsters.mev,e,2,1.30);",
+             "drawCustomMonster(customMonsters.mev,{...e,y:e.y+18},2,1.30);"),
+            ("drawCustomMonster(customMonsters.bot,e,2,1.38);",
+             "drawCustomMonster(customMonsters.bot,{...e,y:e.y+14},2,1.38);"),
+            ("function consumeSword(){return window.StabiStock?.consume?.('sword')||false}",
+             "function consumeSword(){if(window.StabiStock?.consume)return window.StabiStock.consume('sword');const n=Number(localStorage.getItem('stabi_stock_sword')||0);if(n<=0)return false;localStorage.setItem('stabi_stock_sword',String(n-1));return true}"),
+            ("if(!e || !['slippage','mev'].includes(e.type))return false;",
+             "if(!e || !['slippage','mev','spike','boss'].includes(e.type))return false;"),
+            ("if(distance<0 || distance>105 || !verticalClose)return false;",
+             "if(distance<-15 || distance>150 || !verticalClose)return false;"),
+            ("if(P.shield>0){\n   ctx.save();\n   ctx.strokeStyle='#9dfff0';",
+             "if(false && P.shield>0){\n   ctx.save();\n   ctx.strokeStyle='#9dfff0';")
+          ]
+
+          for old,new in patches:
+            if old not in s:
+              raise SystemExit('Pattern not found: '+old[:90])
+            s=s.replace(old,new,1)
+
+          p.write_text(s)
+          PY
+      - name: Remove one-shot workflow
+        run: rm -f .github/workflows/fix-combat-visuals.yml
+      - name: Commit fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/fix-combat-visuals.yml
+          git commit -m "Fix sword attacks shield visual and monster grounding"
+          git push
