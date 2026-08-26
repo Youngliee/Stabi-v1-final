@@ -1294,7 +1294,11 @@ function drawPlayer(){
  }
  if(P.inv>0&&Math.floor(P.inv*12)%2===0)ctx.globalAlpha=.35;
  ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality=(W<=650?'medium':'high');
- ctx.drawImage(sprite,drawX,drawY,baseW,baseH);
+ const skinVisualScale=(equippedSkin==='cyber'||equippedSkin==='usdz')?STABI_SKIN_VISUAL_SCALE:1;
+ const skinW=baseW*skinVisualScale, skinH=baseH*skinVisualScale;
+ const skinX=drawX-(skinW-baseW)/2;
+ const skinY=drawY-(skinH-baseH);
+ ctx.drawImage(sprite,skinX,skinY,skinW,skinH);
  ctx.restore();
 }
 
