@@ -500,6 +500,10 @@ canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelate
 .desktopGateSmall{margin-top:9px;font-size:9px;color:#86aaa5}
 </style>
 <link rel="preload" href="skin-default-run-0.webp" as="image">
+
+<style id="visualTutorialStyle">
+.visualGuide{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}.guidePanel{background:#061918;border:2px solid #2d625d;border-radius:12px;padding:9px}.guidePanel.good{border-color:#4db9a8}.guidePanel.bad{border-color:#8b4050}.guideHead{font-size:11px;font-weight:1000;margin-bottom:7px}.good .guideHead{color:#79ead7}.bad .guideHead{color:#ff8f9d}.guideItems{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.guideItem{min-height:92px;background:#0b2928;border:1px solid #245b57;border-radius:9px;padding:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.guideItem img{width:58px;height:52px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 4px 3px #0008)}.guideItem .fakeIcon{height:52px;display:grid;place-items:center;font-size:35px}.guideItem b{font-size:9px;color:#effffc;margin-top:3px}.guideItem small{font-size:7px;color:#9ac0bb;margin-top:2px}.weaponGuide{display:flex;align-items:center;justify-content:center;gap:10px;margin:9px 0;padding:8px;border:1px solid #d7ae38;border-radius:10px;background:#2a2414}.weaponGuide .swordIcon{font-size:31px}.weaponGuide b{display:block;color:#ffd75f;font-size:10px}.weaponGuide span{font-size:8px;color:#e8dbac}@media(max-width:620px){.visualGuide{gap:6px}.guidePanel{padding:6px}.guideItems{grid-template-columns:1fr 1fr;gap:4px}.guideItem{min-height:75px;padding:3px}.guideItem img{width:45px;height:40px}.guideItem .fakeIcon{height:40px;font-size:28px}.guideItem b{font-size:7px}.guideItem small{font-size:6px}.weaponGuide{margin:6px 0;padding:5px}.howMission{margin:6px 0}.howCard{max-height:96vh}}
+</style>
 </head>
 <body>
 <div id="desktopGate">
@@ -534,11 +538,24 @@ canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelate
 <h2>🎮 HOW TO PLAY</h2>
 <div class="howSub">STABI RUNNER • ROAD TO PHASE 2</div>
 <div class="howMission">🎯 MISSION: COLLECT 40 USDZ → FILL PHASE 2 TO 100% → WIN</div>
+<div class="visualGuide">
+<div class="guidePanel good"><div class="guideHead">✓ COLLECT</div><div class="guideItems">
+<div class="guideItem"><div class="fakeIcon">🪙</div><b>USDZ</b><small>GAIN POINTS</small></div>
+<div class="guideItem"><div class="fakeIcon">🛡️</div><b>SHIELD</b><small>BLOCK 1 HIT</small></div>
+<div class="guideItem"><div class="fakeIcon">❤️</div><b>HEART</b><small>+1 LIFE</small></div>
+<div class="guideItem"><div class="fakeIcon">⚡</div><b>STABILITY DASH</b><small>BREAK THROUGH</small></div>
+</div></div>
+<div class="guidePanel bad"><div class="guideHead">✕ AVOID / DESTROY</div><div class="guideItems">
+<div class="guideItem"><div class="fakeIcon">🔴</div><b>SLIPPAGE</b><small>HAZARD</small></div>
+<div class="guideItem"><img src="mev_move.png" alt="MEV"><b>MEV</b><small>ENEMY</small></div>
+<div class="guideItem"><img src="bot_move.png" alt="MEV Bot"><b>MEV BOT</b><small>ENEMY</small></div>
+<div class="guideItem"><img src="price_move.png" alt="Price Impact"><b>PRICE IMPACT</b><small>ENEMY</small></div>
+</div></div>
+</div>
+<div class="weaponGuide"><div class="swordIcon">⚔️</div><div><b>STABILITY SWORD</b><span>AUTO-SLASHES ENEMIES WHEN THEY GET CLOSE</span></div></div>
 <div class="howGrid">
-<div class="howBox"><b>🏆 HOW TO WIN</b><span>Collect 40 USDZ. Each USDZ fills the Phase 2 meter. Reach 100% to unlock Phase 2 and finish the run.</span></div>
-<div class="howBox"><b>💀 HOW YOU LOSE</b><span>Getting hit by Slippage, MEV or dangerous obstacles costs a life. Lose all lives and the run ends.</span></div>
-<div class="howBox"><b>🛡️ HOW TO SURVIVE</b><span>Jump or double-jump over hazards. Use the Zero-Slippage Shield for protection and Stability Dash to escape danger.</span></div>
-<div class="howBox"><b>🎮 CONTROLS</b><span>Tap / ↑ = Jump • Double tap = Double Jump • ↓ = Ground Slam • Dash button / key = Stability Dash.</span></div>
+<div class="howBox"><b>🏆 HOW TO WIN</b><span>Collect USDZ and fill the Phase 2 meter to 100%.</span></div>
+<div class="howBox"><b>🎮 CONTROLS</b><span>Tap / ↑ Jump • Double tap Double Jump • ↓ Ground Slam • ⚡ Dash.</span></div>
 </div>
 <button class="main" onclick="closeHowToPlay()">I'M READY — START</button>
 </div>
