@@ -870,7 +870,7 @@ function spawnPattern(){
 function jump(){
  if(!running||paused)return;
  if(P.onGround){P.vy=-620;P.onGround=false;P.jumps=1;setSpriteState('jump',true);beep(520)}
- else if(P.jumps<2){P.vy=-540;P.jumps=2;setSpriteState('jump',true);beep(680)}
+ else if(P.jumps<2 || (P.jumps>=2 && bootsAvailable() && consumeBootsJump())){P.vy=-540;P.jumps=2;setSpriteState('jump',true);beep(680)}
 }
 function duck(on){
  P.duck=on;
@@ -904,7 +904,7 @@ function hit(e){
    try{window.StabiAudio?.SFX?.shield?.()}catch(_){} remove(e);return;
  }
  if(P.inv>0)return;
- lives--;P.inv=1.4;shake=12;flash=.18;setSpriteState('hurt',true);beep(140,.14,'sawtooth');toast('LIQUIDITY HIT!');setTimeout(()=>{if(running && P.onGround && !P.duck)setSpriteState('run',true)},360);
+ lives--;autoRecovery();P.inv=1.4;shake=12;flash=.18;setSpriteState('hurt',true);beep(140,.14,'sawtooth');toast('LIQUIDITY HIT!');setTimeout(()=>{if(running && P.onGround && !P.duck)setSpriteState('run',true)},360);
  if(lives<=0){
    if(itemStock('core')>0 && consumeItem('core')){
      lives=1;
@@ -922,6 +922,12 @@ let swordSlashCooldown=0;
 let slashFxTime=0, slashFxSkin='default';
 function swordStock(){return window.StabiStock?.stock?.('sword') ?? Number(localStorage.getItem('stabi_stock_sword')||0)}
 function consumeSword(){if(window.StabiStock?.consume)return window.StabiStock.consume('sword');const n=Number(localStorage.getItem('stabi_stock_sword')||0);if(n<=0)return false;localStorage.setItem('stabi_stock_sword',String(n-1));return true}
+function itemStock(k){return window.StabiStock?.stock?.(k) ?? Number(localStorage.getItem('stabi_stock_'+k)||0)}
+function consumeItem(k){if(window.StabiStock?.consume)return window.StabiStock.consume(k);const key='stabi_stock_'+k,n=Number(localStorage.getItem(key)||0);if(n<=0)return false;localStorage.setItem(key,String(n-1));return true}
+function autoRecovery(){if(lives===1 && itemStock('life')>0 && consumeItem('life')){lives=Math.min(3,lives+1);toast('💚 RECOVERY CORE AUTO USED!  LIFE ×'+itemStock('life'));try{beep(620,.1)}catch(_){}}}
+function autoShield(){if(itemStock('shield')>0 && consumeItem('shield')){P.shield=1;toast('🛡️ SHIELD AUTO ACTIVATED!  SHIELD ×'+itemStock('shield'));try{beep(760,.08)}catch(_){};return true}return false}
+function bootsAvailable(){return itemStock('boots')>0}
+function consumeBootsJump(){if(!bootsAvailable()||!consumeItem('boots'))return false;toast('👟 BOOTS DOUBLE JUMP!  BOOTS ×'+itemStock('boots'));try{beep(960,.08)}catch(_){};return true}
 function trySwordSlash(e){
  if(!e || !['slippage','mev','spike','boss'].includes(e.type))return false;
  if(e.__destroyed || swordSlashCooldown>0 || swordStock()<=0)return false;
