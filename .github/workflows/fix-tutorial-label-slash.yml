@@ -1,0 +1,33 @@
+name: Fix tutorial label and slash visuals
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch visuals
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html'); s=p.read_text()
+          s=s.replace('<div class="guideItem"><div class="fakeIcon">🔴</div><b>SLIPPAGE</b><small>HAZARD</small></div>', '<div class="guideItem"><img src="slippage_move.png" alt="Slippage"><b>SLIPPAGE</b><small>HAZARD</small></div>')
+          s=s.replace("drawPixelText('MEV',e.x+e.w/2,e.y-16,9,'#ca9aff','center');return;", "drawPixelText('MEV',e.x+e.w/2,e.y-34,9,'#ca9aff','center');return;")
+          s=s.replace('slashFxTime=.22;', 'slashFxTime=.48;')
+          s=s.replace('const t=slashFxTime/.22;', 'const t=Math.min(1,slashFxTime/.48);')
+          s=s.replace('const x=P.x+P.w*.72, y=P.y+P.h*.48;', 'const x=P.x+P.w*.92, y=P.y+P.h*.46;')
+          s=s.replace('ctx.lineWidth=6;', 'ctx.lineWidth=10;', 1)
+          p.write_text(s)
+          PY
+      - name: Remove workflow and commit
+        run: |
+          rm -f .github/workflows/fix-tutorial-label-slash.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/fix-tutorial-label-slash.yml
+          git commit -m "Fix Slippage tutorial icon, MEV label, and sword slash visibility"
+          git push
