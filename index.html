@@ -904,15 +904,15 @@ function remove(e){const i=entities.indexOf(e);if(i>=0)entities.splice(i,1)}
 let swordSlashCooldown=0;
 let slashFxTime=0, slashFxSkin='default';
 function swordStock(){return window.StabiStock?.stock?.('sword') ?? Number(localStorage.getItem('stabi_stock_sword')||0)}
-function consumeSword(){return window.StabiStock?.consume?.('sword')||false}
+function consumeSword(){if(window.StabiStock?.consume)return window.StabiStock.consume('sword');const n=Number(localStorage.getItem('stabi_stock_sword')||0);if(n<=0)return false;localStorage.setItem('stabi_stock_sword',String(n-1));return true}
 function trySwordSlash(e){
- if(!e || !['slippage','mev'].includes(e.type))return false;
+ if(!e || !['slippage','mev','spike','boss'].includes(e.type))return false;
  if(swordSlashCooldown>0 || swordStock()<=0)return false;
 
  const playerFront=P.x+STABI_HITBOX.w;
  const distance=e.x-playerFront;
  const verticalClose=(e.y+e.h>P.y+8) && (e.y<P.y+(P.duck?STABI_HITBOX.h*.62:STABI_HITBOX.h)+10);
- if(distance<0 || distance>105 || !verticalClose)return false;
+ if(distance<-15 || distance>150 || !verticalClose)return false;
 
  if(!consumeSword())return false;
  swordSlashCooldown=.32;
@@ -1245,7 +1245,7 @@ function drawPlayer(){
      ctx.drawImage(sprite,drawX-i*18,drawY,baseW,baseH);ctx.restore();
    }
  }
- if(P.shield>0){
+ if(false && P.shield>0){
    ctx.save();
    ctx.strokeStyle='#9dfff0';
    ctx.lineWidth=3;
@@ -1290,7 +1290,7 @@ function drawEntity(e){
    drawPixelText('SLIPPAGE',e.x+e.w/2,e.y-12,8,'#ff8290','center');return;
  }
  if(e.type==='mev'){
-   drawCustomMonster(customMonsters.mev,e,2,1.30);
+   drawCustomMonster(customMonsters.mev,{...e,y:e.y+18},2,1.30);
    drawPixelText('MEV',e.x+e.w/2,e.y-16,9,'#ca9aff','center');return;
  }
  if(e.type==='spike'){
@@ -1298,7 +1298,7 @@ function drawEntity(e){
    drawPixelText('PRICE IMPACT',e.x+e.w/2,e.y-20,7,'#ff9d78','center');return;
  }
  if(e.type==='boss'){
-   drawCustomMonster(customMonsters.bot,e,2,1.38);
+   drawCustomMonster(customMonsters.bot,{...e,y:e.y+14},2,1.38);
    drawPixelText('MEV BOT',e.x+e.w/2,e.y-22,9,'#7de9ff','center');return;
  }
  if(e.type==='shield'){
