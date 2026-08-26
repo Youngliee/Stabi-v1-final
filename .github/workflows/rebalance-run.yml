@@ -1,0 +1,40 @@
+name: Rebalance run length and USDZ
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch balance
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html'); s=p.read_text()
+          # Change the Phase 2 / finish target from 5000 SP to 3000 SP wherever represented as a literal.
+          s=s.replace('5000 SP','3000 SP').replace('5000SP','3000SP')
+          # Replace common numeric finish/progress thresholds without touching unrelated larger numbers.
+          for old,new in [('world>=5000','world>=3000'),('world > 5000','world > 3000'),('world>= 5000','world>= 3000'),('world/5000','world/3000'),('world / 5000','world / 3000'),('Math.min(1,world/5000)','Math.min(1,world/3000)'),('5000-world','3000-world')]:
+              s=s.replace(old,new)
+          # Target roughly 50 collectible USDZ per full 3000-SP run by increasing coin spawn frequency.
+          # Existing entity generation uses coin chance; boost only common coin probability literals.
+          s=s.replace("Math.random()<.18?'coin'", "Math.random()<.42?'coin'")
+          s=s.replace("Math.random()<0.18?'coin'", "Math.random()<0.42?'coin'")
+          s=s.replace('Math.random()<.18 ? \'coin\'', 'Math.random()<.42 ? \'coin\'')
+          s=s.replace('Math.random()<0.18 ? \'coin\'', 'Math.random()<0.42 ? \'coin\'')
+          # Also shorten coin-only spawn interval when present, preserving one USDZ per pickup.
+          s=s.replace('coinClock=2.4','coinClock=1.2').replace('coinClock = 2.4','coinClock = 1.2')
+          p.write_text(s)
+          PY
+      - name: Remove workflow and commit
+        run: |
+          rm -f .github/workflows/rebalance-run.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/rebalance-run.yml
+          git commit -m "Rebalance game to 3000 SP and about 50 USDZ per run" || exit 0
+          git push
