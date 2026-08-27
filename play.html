@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<meta name="theme-color" content="#071a1a" />
+<title>Stabi Runner</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03100f}iframe{display:block;width:100%;height:100%;border:0;background:#03100f}</style>
+</head>
+<body>
+<iframe id="game" src="index.html" title="Stabi Runner"></iframe>
+<script>
+const frame=document.getElementById('game');
+const skinIds=['default','cyber','legendary','phase2','usdz'];
+function selectedSkin(){
+  const keys=['stabi_pre_game_skin','stabi_equipped_skin','stabi_skin_equipped','equippedSkin','stabiEquippedSkin'];
+  for(const k of keys){try{const v=localStorage.getItem(k);if(skinIds.includes(v))return v}catch(_){}}
+  return 'default';
+}
+function hideSkinShop(doc){
+  if(!doc)return;
+  doc.querySelectorAll('img').forEach(img=>{
+    const src=(img.getAttribute('src')||'').toLowerCase();
+    if(!/^skin-(default|cyber|legendary|phase2|usdz)-/.test(src))return;
+    let node=img;
+    let target=null;
+    for(let i=0;i<7 && node;i++,node=node.parentElement){
+      const t=(node.innerText||'').toUpperCase();
+      if(t.length<700 && (t.includes('BUY')||t.includes('EQUIP')||t.includes('OWNED')||t.includes('SKIN'))){target=node;break}
+    }
+    if(target)target.style.display='none';
+  });
+}
+frame.addEventListener('load',()=>{
+  const id=selectedSkin();
+  try{
+    const w=frame.contentWindow;
+    const d=frame.contentDocument;
+    const keys=['stabi_equipped_skin','stabi_skin_equipped','equippedSkin','stabiEquippedSkin','stabi_pre_game_skin'];
+    keys.forEach(k=>{try{w.localStorage.setItem(k,id)}catch(_){}});
+    try{w.eval(`try{if(typeof equippedSkin!=='undefined')equippedSkin=${JSON.stringify(id)};if(typeof stabiApplyEquippedSkinNow==='function')stabiApplyEquippedSkinNow(${JSON.stringify(id)});if(typeof setSpriteState==='function')setSpriteState('run',true)}catch(e){}`)}catch(_){}
+    hideSkinShop(d);
+    new MutationObserver(()=>hideSkinShop(d)).observe(d.body,{childList:true,subtree:true});
+  }catch(e){console.warn('Stabi pre-game skin wrapper',e)}
+});
+</script>
+</body>
+</html>
