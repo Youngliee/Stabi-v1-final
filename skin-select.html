@@ -10,12 +10,14 @@
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#03100f;color:var(--txt);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 body{background:radial-gradient(circle at 50% 0,rgba(108,211,195,.18),transparent 38%),linear-gradient(#071c1b,#020b0b)}
 body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:28px 28px}
-.wrap{width:min(1000px,100%);min-height:100dvh;margin:auto;padding:24px 16px 30px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1}
+.wrap{width:min(820px,100%);min-height:100dvh;margin:auto;padding:24px 16px 30px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1}
 .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.brand{font-weight:1000;letter-spacing:.08em}.back{color:#bfe9e2;text-decoration:none;border:1px solid var(--line);background:#071d1b;padding:9px 11px;border-radius:9px;font-size:10px}
 .kicker{font-size:10px;color:var(--gold);letter-spacing:.16em;font-weight:1000}.title{font-size:clamp(32px,7vw,58px);margin:7px 0 5px}.sub{color:var(--muted);font-size:11px;line-height:1.55;margin-bottom:18px}
-.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.skin{border:2px solid #285851;background:linear-gradient(180deg,#0c302d,#061918);border-radius:15px;padding:10px;text-align:center;cursor:pointer;transition:.16s transform,.16s border-color,.16s box-shadow}.skin:hover{transform:translateY(-2px)}.skin.active{border-color:#79e7d7;box-shadow:0 0 28px #6cd3c344,inset 0 0 22px #6cd3c322}.skin img{width:100%;height:180px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 12px 18px #000)}.name{font-size:11px;font-weight:1000;margin-top:8px}.tag{font-size:8px;color:#648f89;margin-top:3px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.skin{border:2px solid #285851;background:linear-gradient(180deg,#0c302d,#061918);border-radius:15px;padding:10px;text-align:center;cursor:pointer;transition:.16s transform,.16s border-color,.16s box-shadow;min-width:0}.skin:hover{transform:translateY(-2px)}.skin.active{border-color:#79e7d7;box-shadow:0 0 28px #6cd3c344,inset 0 0 22px #6cd3c322}
+.preview{height:190px;display:grid;place-items:center;overflow:visible}.skin img{max-width:100%;max-height:100%;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 12px 18px #000);transform-origin:center center}.skin[data-skin="default"] img{transform:scale(.90)}.skin[data-skin="cyber"] img{transform:scale(1.42)}.skin[data-skin="usdz"] img{transform:scale(1.42)}
+.name{font-size:11px;font-weight:1000;margin-top:8px}.tag{font-size:8px;color:#648f89;margin-top:3px}
 .go{margin-top:16px;width:100%;border:2px solid #79e7d7;background:linear-gradient(#72dfcf,#45b8a8);color:#05201d;border-radius:12px;padding:14px;font:1000 13px ui-monospace,monospace;cursor:pointer;box-shadow:inset 0 -4px #247d71,0 12px 28px #0006}.note{text-align:center;color:#638d87;font-size:9px;margin-top:9px}
-@media(max-width:760px){.grid{grid-template-columns:repeat(2,1fr)}.skin img{height:130px}.skin:last-child{grid-column:1/-1;max-width:50%;justify-self:center;width:100%}}
+@media(max-width:620px){.wrap{padding:18px 10px 24px}.grid{gap:7px}.skin{padding:7px}.preview{height:135px}.name{font-size:9px}.tag{font-size:7px}.skin[data-skin="default"] img{transform:scale(.88)}.skin[data-skin="cyber"] img,.skin[data-skin="usdz"] img{transform:scale(1.38)}}
 </style>
 </head>
 <body>
@@ -25,23 +27,21 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;ba
   <h1 class="title">SELECT YOUR SKIN</h1>
   <div class="sub">Choose your character before the run. Skins are cosmetic and are no longer part of the in-game shop flow.</div>
   <div class="grid" id="grid">
-    <div class="skin" data-skin="default"><img src="skin-default-run-0.webp" alt="Default skin"><div class="name">DEFAULT</div><div class="tag">CLASSIC RUNNER</div></div>
-    <div class="skin" data-skin="cyber"><img src="skin-cyber-run-0.webp" alt="Cyber skin"><div class="name">CYBER</div><div class="tag">CYBER RUNNER</div></div>
-    <div class="skin" data-skin="legendary"><img src="skin-legendary-run-0.webp" alt="Legendary skin"><div class="name">LEGENDARY</div><div class="tag">LEGENDARY RUNNER</div></div>
-    <div class="skin" data-skin="phase2"><img src="skin-phase2-run-0.webp" alt="Phase 2 skin"><div class="name">PHASE 2</div><div class="tag">PHASE 2 RUNNER</div></div>
-    <div class="skin" data-skin="usdz"><img src="skin-usdz-run-0.webp" alt="USDZ skin"><div class="name">USDZ</div><div class="tag">USDZ RUNNER</div></div>
+    <div class="skin" data-skin="default"><div class="preview"><img src="skin-default-run-0.webp" alt="Default skin"></div><div class="name">DEFAULT</div><div class="tag">CLASSIC RUNNER</div></div>
+    <div class="skin" data-skin="cyber"><div class="preview"><img src="skin-cyber-run-0.webp" alt="Cyber skin"></div><div class="name">CYBER</div><div class="tag">CYBER RUNNER</div></div>
+    <div class="skin" data-skin="usdz"><div class="preview"><img src="skin-usdz-run-0.webp" alt="USDZ skin"></div><div class="name">USDZ</div><div class="tag">USDZ RUNNER</div></div>
   </div>
   <button class="go" id="go">BEGIN RUN ▶</button>
   <div class="note">Selection is remembered on this device.</div>
 </main>
 <script>
-const ids=['default','cyber','legendary','phase2','usdz'];
+const ids=['default','cyber','usdz'];
 const keys=['stabi_equipped_skin','stabi_skin_equipped','equippedSkin','stabiEquippedSkin','stabi_pre_game_skin'];
 let selected='default';
 for(const k of keys){try{const v=localStorage.getItem(k);if(ids.includes(v)){selected=v;break}}catch(_){}}
 const cards=[...document.querySelectorAll('.skin')];
 function paint(){cards.forEach(c=>c.classList.toggle('active',c.dataset.skin===selected))}
-function save(id){selected=id;paint();for(const k of keys){try{localStorage.setItem(k,id)}catch(_){}}}
+function save(id){selected=ids.includes(id)?id:'default';paint();for(const k of keys){try{localStorage.setItem(k,selected)}catch(_){}}}
 cards.forEach(c=>c.addEventListener('click',()=>save(c.dataset.skin)));
 paint();
 document.getElementById('go').onclick=()=>{save(selected);location.href='play.html'};
