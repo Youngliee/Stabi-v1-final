@@ -909,12 +909,12 @@ function hit(e){
  if(P.shield>0){
    P.shield=0;
    burst(e.x,e.y,'#8ff0e2',10);toast('🛡️ PICKUP SHIELD USED!');
-   try{window.StabiAudio?.SFX?.shield?.()}catch(_){} remove(e);return;
+   try{window.StabiAudio?.SFX?.shield?.()}catch(_){} markEnemyDestroyed(e);return;
  }
  if((window.StabiStock?.stock?.('shield')||0)>0){
    window.StabiStock.consume('shield');
    burst(e.x,e.y,'#8ff0e2',10);toast('🛡️ SHIELD USED • LEFT ×'+itemStock('shield'));
-   try{window.StabiAudio?.SFX?.shield?.()}catch(_){} remove(e);return;
+   try{window.StabiAudio?.SFX?.shield?.()}catch(_){} markEnemyDestroyed(e);return;
  }
  if(P.inv>0)return;
  lives--;autoRecovery();P.inv=1.4;shake=12;flash=.18;setSpriteState('hurt',true);beep(140,.14,'sawtooth');toast('LIQUIDITY HIT!');setTimeout(()=>{if(running && P.onGround && !P.duck)setSpriteState('run',true)},360);
@@ -931,6 +931,7 @@ function hit(e){
  }
 }
 function remove(e){const i=entities.indexOf(e);if(i>=0)entities.splice(i,1)}
+function markEnemyDestroyed(e){if(!e||e.__destroyed)return false;e.__destroyed=true;e.__deathT=.65;e.hit=true;return true}
 let swordSlashCooldown=0;
 let slashFxTime=0, slashFxSkin='default';
 function swordStock(){return window.StabiStock?.stock?.('sword') ?? Number(localStorage.getItem('stabi_stock_sword')||0)}
@@ -966,14 +967,14 @@ function trySwordSlash(e){
  const enemyName={slippage:'SLIPPAGE',mev:'MEV',spike:'PRICE IMPACT',boss:'MEV BOT'}[e.type]||'ENEMY';
  toast('⚔️ '+enemyName+' SLASHED!  SWORD ×'+swordStock());
  try{beep(820,.07)}catch(_){}
- e.__destroyed=true;
+ markEnemyDestroyed(e);
  return true;
 }
 function collect(e){
  if(e.type==='coin'){coins++;addUSDZBank(1);score+=25;beep(880);burst(e.x,e.y,'#ffd75f',8)}
  if(e.type==='shield'){P.shield=1;score+=15;toast('SHIELD ACQUIRED');beep(760,.08)}
  if(e.type==='dash'){P.dash=1.7;score+=15;toast('DASH PICKUP');beep(960,.08)}
- if(e.type==='heart'){lives=Math.min(3,lives+1);toast('+1 LIFE');beep(620,.1)}
+ if(e.type==='heart'){if(lives<3){lives++;toast('+1 LIFE')}else{addItem('core',1);toast('💚 FULL LIFE • CORE +1 • CORE ×'+itemStock('core'))}beep(620,.1)}
  remove(e)
 }
 function startGame(){
@@ -1157,12 +1158,12 @@ function update(dt){
  if(bossMode&&waveClock>7){bossMode=false;waveClock=0;score+=150;toast('WAVE CLEARED +150')}
 
  for(const e of [...entities]){
+   if(e.__destroyed){e.__deathT=(e.__deathT??.65)-dt;if(e.__deathT<=0)remove(e);continue}
    e.x-=speed*dt*(e.type==='mev'?1.13:1);
    if(e.x<-140){remove(e);continue}
 
    // Stability Sword: lightweight automatic defensive slash.
    if(trySwordSlash(e)){
-     remove(e);
      continue;
    }
 
@@ -1312,6 +1313,29 @@ function drawPlayer(){
 const customMonsters={};
 [['slippage','slippage_move.png'],['mev','mev_move.png'],['price','price_move.png'],['bot','bot_move.png']]
 .forEach(([k,u])=>{let i=new Image();i.src=u;customMonsters[k]=i});
+const deadMonsters={};
+[['slippage','slippage_dead.png'],['mev','mev_dead.png'],['bot','bot_dead.png']]
+.forEach(([k,u])=>{let i=new Image();i.src=u;deadMonsters[k]=i});
+function drawDeadEnemy(e){
+ const key=e.type==='boss'?'bot':e.type;
+ const img=deadMonsters[key];
+ ctx.save();
+ const left=Math.max(0,Math.min(.65,e.__deathT??.65));
+ ctx.globalAlpha=left<.22?Math.max(0,left/.22):1;
+ if(img&&img.complete&&img.naturalWidth){
+   const scale=e.type==='boss'?1.38:(e.type==='mev'?1.30:1.20);
+   const dw=e.w*scale,dh=dw*img.naturalHeight/img.naturalWidth;
+   ctx.drawImage(img,e.x+(e.w-dw)/2,e.y+e.h-dh,dw,dh);
+ }else if(e.type==='spike'){drawCustomMonster(customMonsters.price,e,2,1.60)}
+ else {
+   const move=customMonsters[key];
+   if(move)drawCustomMonster(move,e,2,e.type==='boss'?1.38:(e.type==='mev'?1.30:1.20));
+ }
+ ctx.restore();
+ const label={slippage:['SLIPPAGE','#ff8290',8,-12],mev:['MEV','#ca9aff',9,-34],spike:['PRICE IMPACT','#ff9d78',7,-20],boss:['MEV BOT','#7de9ff',9,-22]}[e.type];
+ if(label)drawPixelText(label[0],e.x+e.w/2,e.y+label[3],label[2],label[1],'center');
+ return true;
+}
 function drawCustomMonster(img,e,frames,scale){
  if(!img||!img.complete||!img.naturalWidth)return false;
  const fw=img.naturalWidth/frames, fh=img.naturalHeight;
@@ -1322,6 +1346,7 @@ function drawCustomMonster(img,e,frames,scale){
 }
 function drawEntity(e){
  const t=performance.now()/1000;
+ if(e.__destroyed&&['slippage','mev','spike','boss'].includes(e.type)){drawDeadEnemy(e);return}
 
  if(e.type==='coin'){
    ctx.save();ctx.shadowColor='#8fffee';ctx.shadowBlur=14;
