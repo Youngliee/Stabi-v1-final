@@ -11,7 +11,7 @@
 <iframe id="game" src="index.html" title="Stabi Runner"></iframe>
 <script>
 const frame=document.getElementById('game');
-const skinIds=['default','cyber','legendary','phase2','usdz'];
+const skinIds=['default','cyber','usdz'];
 function selectedSkin(){
   const keys=['stabi_pre_game_skin','stabi_equipped_skin','stabi_skin_equipped','equippedSkin','stabiEquippedSkin'];
   for(const k of keys){try{const v=localStorage.getItem(k);if(skinIds.includes(v))return v}catch(_){}}
