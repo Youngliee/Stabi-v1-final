@@ -1,0 +1,46 @@
+name: Build landing image assets
+on:
+  push:
+    branches: [landing-visual-test]
+    paths:
+      - '.github/workflows/build-landing-assets.yml'
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: landing-visual-test
+      - name: Rebuild hero and Stabilizer logo
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+
+          def rebuild(parts, out):
+              data=''.join(Path(p).read_text().strip() for p in parts)
+              Path(out).write_bytes(base64.b64decode(data))
+
+          rebuild([f'assets/hero{i}.txt' for i in range(5)], 'landing-hero.webp')
+          rebuild([f'assets/logo{i}.txt' for i in range(2)], 'stabilizer-logo.webp')
+
+          p=Path('landing.html')
+          s=p.read_text()
+          s=s.replace('src="skin-default-run-0.webp" alt="Stabi Runner character"', 'src="landing-hero.webp" alt="Stabi Runner character"')
+          s=s.replace('<img id="stabilizerLogo" class="stabiLogo" alt="Stabilizer logo"/>', '<img id="stabilizerLogo" class="stabiLogo ready" src="stabilizer-logo.webp" alt="Stabilizer logo"/>')
+          s=s.replace("loadB64(['assets/hero0.txt','assets/hero1.txt','assets/hero2.txt','assets/hero3.txt','assets/hero4.txt'],'image/webp','heroImg');", '')
+          s=s.replace("loadB64(['assets/logo0.txt','assets/logo1.txt'],'image/webp','stabilizerLogo');", '')
+          p.write_text(s)
+          PY
+          test -s landing-hero.webp
+          test -s stabilizer-logo.webp
+      - name: Commit rebuilt assets
+        run: |
+          rm -f .github/workflows/build-landing-assets.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add landing.html landing-hero.webp stabilizer-logo.webp .github/workflows/build-landing-assets.yml
+          git commit -m "Use direct landing hero and Stabilizer logo assets"
+          git push origin HEAD:landing-visual-test
