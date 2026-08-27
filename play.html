@@ -6,6 +6,9 @@
 <meta name="theme-color" content="#071a1a" />
 <title>Stabi Runner</title>
 <style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03100f}iframe{display:block;width:100%;height:100%;border:0;background:#03100f}</style>
+<script>
+try{localStorage.setItem('stabi_community_access_v1','1')}catch(_){}
+</script>
 </head>
 <body>
 <iframe id="game" src="game.html" title="Stabi Runner"></iframe>
@@ -16,6 +19,11 @@ function selectedSkin(){
   const keys=['stabi_pre_game_skin','stabi_equipped_skin','stabi_skin_equipped','equippedSkin','stabiEquippedSkin'];
   for(const k of keys){try{const v=localStorage.getItem(k);if(skinIds.includes(v))return v}catch(_){}}
   return 'default';
+}
+function disableLegacyAccessGate(w,d){
+  try{w.localStorage.setItem('stabi_community_access_v1','1')}catch(_){}
+  const gate=d?.getElementById('stabiAccessGate');
+  if(gate){gate.classList.add('hidden');gate.style.display='none'}
 }
 function hideSkinShop(doc){
   if(!doc)return;
@@ -36,11 +44,12 @@ frame.addEventListener('load',()=>{
   try{
     const w=frame.contentWindow;
     const d=frame.contentDocument;
+    disableLegacyAccessGate(w,d);
     const keys=['stabi_equipped_skin','stabi_skin_equipped','equippedSkin','stabiEquippedSkin','stabi_pre_game_skin'];
     keys.forEach(k=>{try{w.localStorage.setItem(k,id)}catch(_){}});
     try{w.eval(`try{if(typeof equippedSkin!=='undefined')equippedSkin=${JSON.stringify(id)};if(typeof stabiApplyEquippedSkinNow==='function')stabiApplyEquippedSkinNow(${JSON.stringify(id)});if(typeof setSpriteState==='function')setSpriteState('run',true)}catch(e){}`)}catch(_){}
     hideSkinShop(d);
-    new MutationObserver(()=>hideSkinShop(d)).observe(d.body,{childList:true,subtree:true});
+    new MutationObserver(()=>{disableLegacyAccessGate(w,d);hideSkinShop(d)}).observe(d.body,{childList:true,subtree:true});
   }catch(e){console.warn('Stabi pre-game skin wrapper',e)}
 });
 </script>
