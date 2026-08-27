@@ -13,8 +13,6 @@
 const frame=document.getElementById('game');
 const skinIds=['default','cyber','usdz'];
 const accessKey='stabi_community_access_v1';
-
-// Public V1: unlock BEFORE game.html executes.
 try{localStorage.setItem(accessKey,'1')}catch(_){}
 
 function selectedSkin(){
@@ -22,42 +20,57 @@ function selectedSkin(){
   for(const k of keys){try{const v=localStorage.getItem(k);if(skinIds.includes(v))return v}catch(_){}}
   return 'default';
 }
-function hideSkinShop(doc){
-  if(!doc)return;
+function removeAccessGate(doc,w){
+  try{w.localStorage.setItem(accessKey,'1')}catch(_){}
+  try{doc?.getElementById('stabiAccessGate')?.remove()}catch(_){}
+}
+function leafText(el){return ((el?.innerText||'').trim().replace(/\s+/g,' ')).toUpperCase()}
+function cleanupLegacySkinUI(doc){
+  if(!doc||!doc.body)return;
+
+  // Keep the in-game shop/items focused on equipment only.
+  [...doc.querySelectorAll('button,div,span')].forEach(el=>{
+    const t=leafText(el);
+    if(!t)return;
+    if((t==='SKINS'||t==='👕 SKINS') && el.children.length<=2){el.style.display='none'}
+    if(t.includes('SKINS COLLECTED') && t.length<80){el.style.display='none'}
+  });
+
+  // If the old shop opens on the skin tab, switch it back to equipment.
+  const eq=[...doc.querySelectorAll('button,div')].find(el=>{
+    const t=leafText(el);return (t==='EQUIPMENT'||t==='⚔ EQUIPMENT'||t==='⚔️ EQUIPMENT') && el.children.length<=2;
+  });
+  if(eq){
+    const skins=[...doc.querySelectorAll('button,div')].find(el=>{const t=leafText(el);return (t==='SKINS'||t==='👕 SKINS') && el.children.length<=2});
+    if(skins && getComputedStyle(skins).display!=='none')try{eq.click()}catch(_){}
+  }
+
+  // Remove legacy skin cards from both Shop and My Items.
   doc.querySelectorAll('img').forEach(img=>{
     const src=(img.getAttribute('src')||'').toLowerCase();
     if(!/^skin-(default|cyber|legendary|phase2|usdz)-/.test(src))return;
     let node=img;
     let target=null;
-    for(let i=0;i<7 && node;i++,node=node.parentElement){
-      const t=(node.innerText||'').toUpperCase();
-      if(t.length<700 && (t.includes('BUY')||t.includes('EQUIP')||t.includes('OWNED')||t.includes('SKIN'))){target=node;break}
+    for(let i=0;i<8&&node&&node!==doc.body;i++,node=node.parentElement){
+      const t=leafText(node);
+      if(t.length<900 && (t.includes('DEFAULT STABI')||t.includes('CYBER STABI')||t.includes('USDZ STABI')||t.includes('LEGENDARY STABI')||t.includes('PHASE 2')) && (t.includes('BUY')||t.includes('OWNED')||t.includes('EQUIP')||t.includes('EQUIPPED'))){target=node;break}
     }
     if(target)target.style.display='none';
   });
 }
-function removeAccessGate(doc,w){
-  try{w.localStorage.setItem(accessKey,'1')}catch(_){}
-  try{
-    const gate=doc?.getElementById('stabiAccessGate');
-    if(gate)gate.remove();
-  }catch(_){}
-}
+
 frame.addEventListener('load',()=>{
   const id=selectedSkin();
   try{
-    const w=frame.contentWindow;
-    const d=frame.contentDocument;
+    const w=frame.contentWindow,d=frame.contentDocument;
     removeAccessGate(d,w);
     const keys=['stabi_equipped_skin','stabi_skin_equipped','equippedSkin','stabiEquippedSkin','stabi_pre_game_skin'];
     keys.forEach(k=>{try{w.localStorage.setItem(k,id)}catch(_){}});
     try{w.eval(`try{localStorage.setItem('stabi_community_access_v1','1');const g=document.getElementById('stabiAccessGate');if(g)g.remove();if(typeof equippedSkin!=='undefined')equippedSkin=${JSON.stringify(id)};if(typeof stabiApplyEquippedSkinNow==='function')stabiApplyEquippedSkinNow(${JSON.stringify(id)});if(typeof setSpriteState==='function')setSpriteState('run',true)}catch(e){}`)}catch(_){}
-    hideSkinShop(d);
-    new MutationObserver(()=>{removeAccessGate(d,w);hideSkinShop(d)}).observe(d.body,{childList:true,subtree:true});
+    cleanupLegacySkinUI(d);
+    new MutationObserver(()=>{removeAccessGate(d,w);cleanupLegacySkinUI(d)}).observe(d.body,{childList:true,subtree:true});
   }catch(e){console.warn('Stabi public game wrapper',e)}
 });
-
-// Important: load only after access flag is stored.
 frame.src='game.html';
 </script>
 </body>
