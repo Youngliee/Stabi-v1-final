@@ -14,10 +14,10 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;ba
 .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.brand{font-weight:1000;letter-spacing:.08em}.back{color:#bfe9e2;text-decoration:none;border:1px solid var(--line);background:#071d1b;padding:9px 11px;border-radius:9px;font-size:10px}
 .kicker{font-size:10px;color:var(--gold);letter-spacing:.16em;font-weight:1000}.title{font-size:clamp(32px,7vw,58px);margin:7px 0 5px}.sub{color:var(--muted);font-size:11px;line-height:1.55;margin-bottom:18px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.skin{border:2px solid #285851;background:linear-gradient(180deg,#0c302d,#061918);border-radius:15px;padding:10px;text-align:center;cursor:pointer;transition:.16s transform,.16s border-color,.16s box-shadow;min-width:0}.skin:hover{transform:translateY(-2px)}.skin.active{border-color:#79e7d7;box-shadow:0 0 28px #6cd3c344,inset 0 0 22px #6cd3c322}
-.preview{height:190px;display:grid;place-items:center;overflow:hidden}.skin img{height:132px;width:auto;max-width:88%;object-fit:contain;image-rendering:auto;filter:drop-shadow(0 12px 18px #000)}.skin img.newMascot{height:168px;max-width:96%;filter:drop-shadow(0 14px 20px #000) drop-shadow(0 0 16px #6cd3c344)}
+.preview{height:210px;display:grid;place-items:center;overflow:hidden}.skin img{height:142px;width:auto;max-width:90%;object-fit:contain;image-rendering:auto;filter:drop-shadow(0 12px 18px #000)}.skin[data-skin="default"] img{height:190px;max-width:96%}
 .name{font-size:11px;font-weight:1000;margin-top:8px}.tag{font-size:8px;color:#648f89;margin-top:3px}
 .go{margin-top:16px;width:100%;border:2px solid #79e7d7;background:linear-gradient(#72dfcf,#45b8a8);color:#05201d;border-radius:12px;padding:14px;font:1000 13px ui-monospace,monospace;cursor:pointer;box-shadow:inset 0 -4px #247d71,0 12px 28px #0006}.note{text-align:center;color:#638d87;font-size:9px;margin-top:9px}
-@media(max-width:620px){.wrap{padding:18px 10px 24px}.grid{gap:7px}.skin{padding:7px}.preview{height:135px}.skin img{height:94px;max-width:90%}.skin img.newMascot{height:116px;max-width:98%}.name{font-size:9px}.tag{font-size:7px}}
+@media(max-width:620px){.wrap{padding:18px 10px 24px}.grid{gap:7px}.skin{padding:7px}.preview{height:150px}.skin img{height:98px;max-width:90%}.skin[data-skin="default"] img{height:132px;max-width:96%}.name{font-size:9px}.tag{font-size:7px}}
 </style>
 </head>
 <body>
@@ -27,7 +27,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.22;ba
   <h1 class="title">SELECT YOUR SKIN</h1>
   <div class="sub">Choose your character before the run.</div>
   <div class="grid" id="grid">
-    <div class="skin" data-skin="default"><div class="preview"><img class="newMascot" src="stabi-mascot-new.webp?v=146c74c" alt="Stabi mascot"></div><div class="name">STABI</div><div class="tag">CLASSIC RUNNER</div></div>
+    <div class="skin" data-skin="default"><div class="preview"><img src="stabi-mascot-hd.webp?v=2" alt="Stabi mascot" onerror="this.onerror=null;this.src='skin-default-run-0.webp'"></div><div class="name">STABI</div><div class="tag">CLASSIC RUNNER</div></div>
     <div class="skin" data-skin="cyber"><div class="preview"><img src="skin-cyber-run-0.webp" alt="Cyber skin"></div><div class="name">CYBER</div><div class="tag">CYBER RUNNER</div></div>
     <div class="skin" data-skin="usdz"><div class="preview"><img src="skin-usdz-run-0.webp" alt="USDZ skin"></div><div class="name">USDZ</div><div class="tag">USDZ RUNNER</div></div>
   </div>
